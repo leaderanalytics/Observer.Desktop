@@ -1,0 +1,58 @@
+﻿<h3>Observation List</h3>
+
+<MudTable ServerData="@(new Func<TableState, Task<TableData<Observation>>>(LoadObservations))"  Dense="true" Hover="true" >
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="Observation">Vintage Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="obsdate_field" T="Observation">Obs Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="value_field" T="Observation">Value</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Vintage Date">@context.VintageDate.ToString("MM/dd/yyyy")</MudTd>
+        <MudTd DataLabel="Obs Date">@context.ObsDate.ToString("MM/dd/yyyy")</MudTd>
+        <MudTd DataLabel="Value">@context.Value</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    
+    
+    [Parameter] public IEnumerable<Observation> obs { get; set; }
+    [Parameter] public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void OnobsChanged(ChangeEventArgs e)
+    {
+        int junk = 1;
+    }
+
+
+    private async Task<TableData<Observation>> LoadObservations(TableState tableState)
+    {
+        // Uncomment ShowLoading when this issue is fixed
+        // https://github.com/dotnet/aspnetcore/issues/30070
+
+        //await MessageService.ShowLoading();
+        //await MessageService.HideLoading();
+
+        if (obs == null)
+            return new TableData<Observation>();
+
+        int junk = obs.Count();
+        return new TableData<Observation> { TotalItems = obs.Count(), Items = obs };
+    }
+
+}

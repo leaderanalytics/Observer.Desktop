@@ -1,0 +1,75 @@
+﻿<MudDialog>
+    <TitleContent>
+
+        @if (MessageType == MessageType.Info)
+        {
+            <MudIcon Class="bi bi-info-circle" Size="Size.Medium"></MudIcon>
+        }
+        else if (MessageType == MessageType.Warning)
+        {
+            <MudIcon Class="bi bi-exclamation-circle" Size="Size.Medium"></MudIcon>
+        }
+        else if (MessageType == MessageType.Error)
+        {
+            <MudIcon Class="bi bi-x-circle" Size="Size.Medium"></MudIcon>
+        }
+        else if (MessageType == MessageType.Ask)
+        {
+            <MudIcon Class="bi bi-question-circle" Size="Size.Medium"></MudIcon>
+        }
+        else if (MessageType == MessageType.Confirm)
+        {
+            <MudIcon Class="bi bi-question-circle" Size="Size.Medium"></MudIcon>
+        }
+    </TitleContent>
+    <DialogContent>
+        @if (MessageType == MessageType.Loading)
+        {
+            <img src="please_wait.gif" style="height:50px;width:50px" /> <h3>Loading....</h3>
+        }
+        else
+        {
+            @Message
+        }
+    </DialogContent>
+    <DialogActions>
+
+        @if (MessageType == MessageType.Info || MessageType == MessageType.Error || MessageType == MessageType.Warning || MessageType == MessageType.Confirm)
+        {
+            <MudButton Color="Color.Primary" OnClick="SubmitHandler">Ok</MudButton>
+
+            if (MessageType == MessageType.Confirm)
+            {
+                <MudButton OnClick="CancelHandler">Cancel</MudButton>
+            }
+        }
+        else if (MessageType == MessageType.Ask)
+        {
+            <MudButton Color="Color.Primary" OnClick="SubmitHandler">Yes</MudButton>
+            <MudButton Color="Color.Default" OnClick="CancelHandler">No</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public MessageType MessageType { get; set; }
+    [Parameter] public EventCallback<MessageType> MessageTypeChanged { get; set; }
+    [Parameter] public string Message { get; set; }
+    [Parameter] public EventCallback<string> MessageChanged { get; set; }
+
+
+    public async Task SubmitHandler()
+    {
+        MudDialog.Close(DialogResult.Ok(true)); // Control returns to the line after DialogService.Show(...)
+    }
+
+    public void CancelHandler()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+
+}

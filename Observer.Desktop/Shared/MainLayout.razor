@@ -1,17 +1,92 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudThemeProvider Theme="_currentTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MessageBoxProvider />
+<MudLayout>
+    <MudAppBar>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudTooltip Text="Toggle light/dark theme">
+            <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@((e) => DarkMode())" />
+        </MudTooltip>
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false">
+        <MudDrawerHeader Class="" LinkToIndex="true">
+            Logo here
+        </MudDrawerHeader>
+        <NavMenu @ref="@_navMenuRef" />
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+@code {
+    private RenderFragment header;
+    private bool _drawerOpen = false;
+    private bool _rightToLeft = false;
+    private NavMenu _navMenuRef;
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    public RenderFragment Header
+    {
+        get => header;
+
+        set
+        {
+            if (header != value)
+            {
+                header = value;
+            }
+
+            InvokeAsync(() => StateHasChanged());
+
+        }
+    }
+    private MudTheme _currentTheme = new MudTheme();
+    private readonly MudTheme _defaultTheme =
+        new MudTheme()
+        {
+            Palette = new Palette()
+            {
+                Black = "#272c34"
+            }
+        };
+    private readonly MudTheme _darkTheme =
+    new MudTheme()
+    {
+        Palette = new Palette()
+        {
+            Black = "#27272f",
+            Background = "#32333d",
+            BackgroundGrey = "#27272f",
+            Surface = "#373740",
+            DrawerBackground = "#27272f",
+            DrawerText = "rgba(255,255,255, 0.50)",
+            AppbarBackground = "#27272f",
+            AppbarText = "rgba(255,255,255, 0.70)",
+            TextPrimary = "rgba(255,255,255, 0.70)",
+            TextSecondary = "rgba(255,255,255, 0.50)",
+            ActionDefault = "#adadb1",
+            ActionDisabled = "rgba(255,255,255, 0.26)",
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            DrawerIcon = "rgba(255,255,255, 0.50)"
+        }
+    };
+    [Inject] private NavigationManager NavigationManager { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        _currentTheme = _darkTheme;
+        //if not home page, the navbar starts open
+        if (!NavigationManager.IsHomePage())
+        {
+            _drawerOpen = true;
+        }
+    }
+
+    private void DrawerToggle() => _drawerOpen = !_drawerOpen;
+
+    private void DarkMode() => _currentTheme = _currentTheme == _defaultTheme ? _darkTheme : _defaultTheme;
+}

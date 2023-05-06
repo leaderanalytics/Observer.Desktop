@@ -1,0 +1,90 @@
+﻿<h3>Observation Pivot Table</h3>
+<div style="all:initial">
+    <div id="pivot-container" style="max-height:600px;">
+        <LeaderPivot T="Observation"
+                     DataSource="LoadObservations"
+                     Measures="Measures"
+                     Dimensions="Dimensions"
+                     DisplayGrandTotals="false"
+                     DisplayGrandTotalOption="true"
+                     DisplayDimensionButtons="true"
+                     DisplayMeasureSelectors="false"
+                     DisplayReloadDataButton="true"
+                     PivotStyle="SelectedPivotStyle">
+        </LeaderPivot>
+    </div>
+</div>
+@code {
+    [Parameter] public IEnumerable<Observation> obs { get; set; }
+    [Parameter] public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
+
+    private List<Dimension<Observation>> Dimensions;
+    private List<Measure<Observation>> Measures;
+    private LeaderPivotStyle SelectedPivotStyle;
+
+
+    public ObsPivotTable()
+    {
+        SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == "Dark");
+        Dimensions = new List<Dimension<Observation>>(4);
+        Measures = new List<Measure<Observation>>(2);
+
+        Dimensions.AddRange(new Dimension<Observation>[] {
+            new Dimension<Observation>
+            {
+                DisplayValue = "Obs Date",
+                GroupValue = x => x.ObsDateString,
+                HeaderValue = x => x.ObsDateString,
+                IsRow = true,
+                IsExpanded = true,
+                Sequence = 0,
+                IsAscending = true,
+                IsEnabled = true
+            },
+
+            new Dimension<Observation>
+            {
+                DisplayValue = "Symbol",
+                GroupValue = x => x.Symbol,
+                HeaderValue = x => x.Symbol,
+                IsRow = true,
+                IsExpanded = true,
+                Sequence = 1,
+                IsAscending = true,
+                IsEnabled = true
+            },
+
+            new Dimension<Observation>
+            {
+                DisplayValue = "Vintage Date",
+                GroupValue = x => x.VintageDateString,
+                HeaderValue = x => x.VintageDateString,
+                IsRow = false,
+                IsExpanded = true,
+                Sequence = 0,
+                IsAscending = true,
+                IsEnabled = true
+            }});
+
+        Measures.Add(new Measure<Observation> { Aggragate = x => x.Measure.Sum(y => Convert.ToDecimal(y.Value)), DisplayValue = "Value", Format="{0:n0}", Sequence = 1, IsEnabled = true });
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    private void OnobsChanged(ChangeEventArgs e)
+    {
+        LoadObservations();
+    }
+
+    private async Task<IEnumerable<Observation>> LoadObservations()
+    {
+        if (obs == null)
+            return null;
+
+        return obs.Take(200);
+    }
+}

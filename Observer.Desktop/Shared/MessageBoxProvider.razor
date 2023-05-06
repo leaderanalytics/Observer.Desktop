@@ -1,0 +1,61 @@
+﻿
+
+@code {
+
+    private MessageService _messageService;
+    [Inject] MessageService MessageService
+    {
+        get => _messageService;
+        set
+        {
+            _messageService = value;
+
+            if (_messageService != null)
+                _messageService.AddHandler(OnMessageReceived);
+        }
+    }
+    [Inject] IDialogService DialogService { get; set; }
+
+    private int LoadingCount;
+    private IDialogReference dialogRef;
+
+
+    private async Task<bool> OnMessageReceived(string message, MessageType messageType)
+    {
+        bool result = false;
+        DialogParameters parms = new DialogParameters();
+        parms.Add("Message", message);
+        parms.Add("MessageType", messageType);
+
+        DialogOptions options = new DialogOptions { DisableBackdropClick = true  };
+
+        if (messageType != MessageType.LoadingComplete)
+        {
+            if (messageType == MessageType.Loading)
+            {
+                LoadingCount++;
+
+                if(dialogRef == null)
+                    dialogRef = DialogService.Show<MessageBox>("", parms, options);
+            }
+            else
+            {
+                DialogResult dialogResult = await DialogService.Show<MessageBox>("", parms, options).Result;
+                result = !dialogResult.Cancelled;
+            }
+        }
+        else
+        {
+            LoadingCount = Math.Max(0, --LoadingCount);
+
+            if (LoadingCount == 0)
+            {
+                dialogRef?.Close();
+                dialogRef = null;
+            }
+        }
+        return result;
+    }
+
+    public void Dispose() => MessageService.Notify -= OnMessageReceived;
+}

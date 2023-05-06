@@ -1,0 +1,39 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 300px;">
+            <MudItem xs="12" sm="12" md="12" lg="12">
+                <MudTextField @bind-Value="symbols" Label="Symbols" HelperText="Enter a comma delimited list of symobls (e.g. NROU, CPI, GNPCA)" Variant="Variant.Filled"  />
+            </MudItem>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="OkClickHandler" Disabled="@string.IsNullOrEmpty(symbols)" >OK</MudButton>
+        <MudButton Color="Color.Primary" OnClick="CancelClickHandler">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    //[Inject] IAdaptiveClient<IDownloaderServices> serviceClient { get; set; }
+    private string symbols { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    public async Task OkClickHandler()
+    {
+   //     if (! string.IsNullOrEmpty(symbols))
+   //          await serviceClient.CallAsync(x => x.SeriesService.SaveLocalSeries(symbols));
+
+        MudDialog.Close(DialogResult.Ok(true)); // Control returns to the line after DialogService.Show(...)
+    }
+
+
+    public void CancelClickHandler()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+}

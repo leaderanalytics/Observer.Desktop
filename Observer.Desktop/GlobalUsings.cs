@@ -1,0 +1,16 @@
+﻿global using System;
+global using System.Linq;
+global using Autofac;
+global using Microsoft.AspNetCore.Components;
+global using System.Net.Http.Json;
+global using LeaderAnalytics.LeaderPivot.Blazor;
+global using MudBlazor.Services;
+global using LeaderAnalytics.Core;
+global using Observer.Desktop;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using Microsoft.Extensions.Configuration;
+global using System.IO;
+global using Serilog;
+global using LeaderAnalytics.Observer.Fred.Services;
+global using MudBlazor.Services;

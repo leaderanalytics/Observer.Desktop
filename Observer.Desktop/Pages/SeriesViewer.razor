@@ -1,0 +1,150 @@
+﻿@page "/seriesViewer"
+<AddSeries />
+<MudLayout>
+    <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
+        <MudButton Variant="Variant.Filled" @onclick="AddSeriesClickHandler" Class="d-flex" Style="text-transform:none">Add series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex" Style="text-transform:none">Update obs all series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Update obs selected series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Delete selected series</MudButton>
+    </MudPaper>
+
+    <MudTable ServerData="@(new Func<TableState, Task<TableData<Series>>>(LoadSeries))" Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Local Series</MudText>
+            <MudSpacer />
+            <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortLabel="symbol_field" T="Series">Symbol</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="title_field" T="Series">Title</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="frequency_field" T="Series">Frequency</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="units_field" T="Series">Units</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="seasonalAdj_field" T="Series">Seasonal Adj</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Symbol">
+                <MudLink href="@($"obsViewer/{context.Symbol}")">@context.Symbol</MudLink>
+            </MudTd>
+            <MudTd DataLabel="Title">
+                <MudTooltip>
+                    <ChildContent>@context.Title</ChildContent>
+                    <TooltipContent>
+                        <MudText Width="60px">
+                            @context.Notes
+                        </MudText>
+                    </TooltipContent>
+                </MudTooltip>
+            </MudTd>
+            <MudTd DataLabel="Frequency">@context.Frequency</MudTd>
+            <MudTd DataLabel="Units">@context.Units</MudTd>
+            <MudTd DataLabel="Seasonal Adj">@context.SeasonalAdj</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudLayout>
+
+@code {
+    [Inject] MessageService MessageService { get; set; }
+    [Inject] IDialogService DialogService { get; set; }
+    [Inject] ISnackbar Snackbar { get; set; }
+    //[Inject] IAdaptiveClient<IDownloaderServices> serviceClient { get; set; }
+    private MudTable<Series> seriesTable;
+    private string searchTitle;
+    private HashSet<Series> selectedItems { get; set; } = new HashSet<Series>();
+
+    private async Task AddSeriesClickHandler()
+    {
+        DialogOptions options = new DialogOptions { DisableBackdropClick = true };
+        var result = await DialogService.Show<AddSeries>("", options).Result;
+
+        bool ok = !result.Cancelled; // (bool)result.Data;
+
+        if (ok)
+            await seriesTable.ReloadServerData();
+    }
+
+    private async Task UpdateAllSeriesClickHandler()
+    {
+        if (! await MessageService.Ask("This might take a while.  Are you sure you want to continue?"))
+            return;
+
+
+        IEnumerable<string> symbols = new List<string>(); //await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeriesSymbols());
+
+        if (symbols == null || ! symbols.Any())
+        {
+            await MessageService.Info("No series have been added.  Use the Add series button to add a series to the local database.");
+            return;
+        }
+
+        await UpdateSeries(symbols);
+    }
+
+    private async Task UpdateSelectedSeriesClickHandler()
+    {
+        if ((selectedItems?.Count ?? 0) == 0)
+        {
+            await MessageService.Info("Please select one or more series to delete.");
+            return;
+        }
+
+        await UpdateSeries(selectedItems.Select(x => x.Symbol));
+    }
+
+    private async Task UpdateSeries(IEnumerable<string> symbols)
+    {
+        await MessageService.ShowLoading();
+        foreach (string symbol in symbols)
+        {
+            Snackbar.Add($"Updating series {symbol}...", Severity.Info);
+            RowOpResult result = new(); //await serviceClient.CallAsync(x => x.ObservationsService.UpdateLocalObservations(symbol));
+
+            if (result.Success)
+                Snackbar.Add($"Series {symbol} was updated successfully.", Severity.Success);
+            else
+                Snackbar.Add($"Eror updating series {symbol}:  {result.Message}", Severity.Error);
+
+        }
+        await MessageService.HideLoading();
+    }
+
+    private async Task DeleteSeriesClickHandler()
+    {
+        if ((selectedItems?.Count ?? 0) == 0)
+        {
+            await MessageService.Info("Please select one or more series to delete.");
+            return;
+        }
+        bool confirm = await MessageService.Ask($"Are you sure you want to delete {selectedItems.Count} series?");
+
+        if (confirm)
+        {
+            await MessageService.ShowLoading();
+            RowOpResult result = new(); //await serviceClient.CallAsync(x => x.SeriesService.DeleteLocalSeries(""));
+            await seriesTable.ReloadServerData();
+            await MessageService.HideLoading();
+        }
+
+    }
+
+    private async Task<TableData<Series>> LoadSeries(TableState tableState)
+    {
+        // Uncomment ShowLoading when this issue is fixed
+        // https://github.com/dotnet/aspnetcore/issues/30070
+
+        // await MessageService.ShowLoading();
+        IEnumerable<Series> series = new List<Series>(); 
+        //await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(tableState.Page * tableState.PageSize, tableState.PageSize, searchTitle));
+        // await MessageService.HideLoading();
+        return new TableData<Series> { TotalItems = 100, Items = series };
+    }
+
+    private void OnSearch(string text)
+    {
+        searchTitle = text;
+        seriesTable.ReloadServerData();
+    }
+}
