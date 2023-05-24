@@ -33,8 +33,21 @@
 
     [Parameter] public string symbol { get; set; }
     private bool dense { get; set; } = true;
-    private IEnumerable<Observation> obs { get; set; }
+    private IEnumerable<Observation> _obs { get; set; }
+    private IEnumerable<Observation> obs 
+    {
+        get => _obs;
+        set
+        {
+            if (_obs != value)
+            {
+                _obs = value;
+                obsChanged.InvokeAsync();
+            }
 
+        }
+    }
+    public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

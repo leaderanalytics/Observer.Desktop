@@ -70,6 +70,8 @@ class Program
 
             containerBuilder.RegisterInstance(endPoints.First(x => x.IsActive)).SingleInstance();
             
+
+
             builder.Services.AddLogging();
             builder.RootComponents.Add<App>("#app");
             builder.Services.AddFredClient().UseAPIKey(apiKey);
