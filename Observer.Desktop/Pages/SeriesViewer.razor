@@ -1,4 +1,5 @@
 ﻿@page "/seriesViewer"
+@inherits BasePage
 <AddSeries />
 <MudLayout>
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
@@ -7,8 +8,10 @@
         <MudButton Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Update obs selected series</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Delete selected series</MudButton>
     </MudPaper>
-
-    <MudTable ServerData="@(new Func<TableState, Task<TableData<Series>>>(LoadSeries))" Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable">
+    <div style="height:calc(100vh - 300px); display:grid; grid-template-rows: minmax(0,1fr)">
+    <MudTable 
+        ServerData="@(new Func<TableState, Task<TableData<Series>>>(LoadSeries))" 
+            Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" FixedHeader="true" Height="100%" RowsPerPage="100">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Local Series</MudText>
             <MudSpacer />
@@ -28,10 +31,12 @@
             </MudTd>
             <MudTd DataLabel="Title">
                 <MudTooltip>
-                    <ChildContent>@context.Title</ChildContent>
+                        <ChildContent>@context.Title</ChildContent>
                     <TooltipContent>
-                        <MudText Width="60px">
-                            @context.Notes
+                        <MudText>
+                            <div style="display:flex;width:70vw;padding-left:10vw;text-align:left;">
+                                    @context.Notes
+                            </div>
                         </MudText>
                     </TooltipContent>
                 </MudTooltip>
@@ -41,29 +46,37 @@
             <MudTd DataLabel="Seasonal Adj">@context.SeasonalAdj</MudTd>
         </RowTemplate>
         <PagerContent>
-            <MudTablePager />
+            <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right" />
         </PagerContent>
     </MudTable>
+    </div>
 </MudLayout>
 
 @code {
-    [Inject] MessageService MessageService { get; set; }
-    [Inject] IDialogService DialogService { get; set; }
+
     [Inject] ISnackbar Snackbar { get; set; }
-    //[Inject] IAdaptiveClient<IDownloaderServices> serviceClient { get; set; }
+
     private MudTable<Series> seriesTable;
     private string searchTitle;
     private HashSet<Series> selectedItems { get; set; } = new HashSet<Series>();
+    private int seriesCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await GetSeriesCount();
+    }
 
     private async Task AddSeriesClickHandler()
     {
         DialogOptions options = new DialogOptions { DisableBackdropClick = true };
         var result = await DialogService.Show<AddSeries>("", options).Result;
 
-        bool ok = !result.Cancelled; // (bool)result.Data;
-
-        if (ok)
+        if (!result.Canceled)
+        {
+            await GetSeriesCount();
             await seriesTable.ReloadServerData();
+        }
     }
 
     private async Task UpdateAllSeriesClickHandler()
@@ -72,7 +85,7 @@
             return;
 
 
-        IEnumerable<string> symbols = new List<string>(); //await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeriesSymbols());
+        IEnumerable<string> symbols = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(0, int.MaxValue, null)))?.Item?.Select(x => x.Symbol);
 
         if (symbols == null || ! symbols.Any())
         {
@@ -97,10 +110,11 @@
     private async Task UpdateSeries(IEnumerable<string> symbols)
     {
         await MessageService.ShowLoading();
+
         foreach (string symbol in symbols)
         {
             Snackbar.Add($"Updating series {symbol}...", Severity.Info);
-            RowOpResult result = new(); //await serviceClient.CallAsync(x => x.ObservationsService.UpdateLocalObservations(symbol));
+            RowOpResult result = await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol));
 
             if (result.Success)
                 Snackbar.Add($"Series {symbol} was updated successfully.", Severity.Success);
@@ -123,7 +137,8 @@
         if (confirm)
         {
             await MessageService.ShowLoading();
-            RowOpResult result = new(); //await serviceClient.CallAsync(x => x.SeriesService.DeleteLocalSeries(""));
+            //RowOpResult result await serviceClient.CallAsync(x => x.SeriesService.DeleteSeries();
+            await GetSeriesCount();
             await seriesTable.ReloadServerData();
             await MessageService.HideLoading();
         }
@@ -132,14 +147,10 @@
 
     private async Task<TableData<Series>> LoadSeries(TableState tableState)
     {
-        // Uncomment ShowLoading when this issue is fixed
-        // https://github.com/dotnet/aspnetcore/issues/30070
-
-        // await MessageService.ShowLoading();
-        IEnumerable<Series> series = new List<Series>(); 
-        //await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(tableState.Page * tableState.PageSize, tableState.PageSize, searchTitle));
-        // await MessageService.HideLoading();
-        return new TableData<Series> { TotalItems = 100, Items = series };
+        await MessageService.ShowLoading();
+        IEnumerable<Series> series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(tableState.Page * tableState.PageSize, tableState.PageSize, searchTitle))).Item;
+        await MessageService.HideLoading();
+        return new TableData<Series> { TotalItems = seriesCount, Items = series };
     }
 
     private void OnSearch(string text)
@@ -147,4 +158,5 @@
         searchTitle = text;
         seriesTable.ReloadServerData();
     }
+    private async Task GetSeriesCount() => seriesCount = await serviceClient.CallAsync(x => x.SeriesService.GetSeriesCount());
 }

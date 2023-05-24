@@ -1,58 +1,38 @@
-﻿<h3>Observation List</h3>
-
-<MudTable ServerData="@(new Func<TableState, Task<TableData<Observation>>>(LoadObservations))"  Dense="true" Hover="true" >
+﻿@inherits BasePage
+<h3>@symbol Observations</h3>
+<div style="height:calc(100vh - 350px); display:grid; grid-template-rows: minmax(0,1fr)">
+<MudTable ServerData="@(new Func<TableState, Task<TableData<Observation>>>(LoadObservations))"  Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="Observation">Vintage Date</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="obsdate_field" T="Observation">Obs Date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="value_field" T="Observation">Value</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="Observation">Vintage Date</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="value_field" Style="width:120px" T="Observation">Value</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Vintage Date">@context.VintageDate.ToString("MM/dd/yyyy")</MudTd>
         <MudTd DataLabel="Obs Date">@context.ObsDate.ToString("MM/dd/yyyy")</MudTd>
-        <MudTd DataLabel="Value">@context.Value</MudTd>
+        <MudTd DataLabel="Vintage Date">@context.VintageDate.ToString("MM/dd/yyyy")</MudTd>
+        <MudTd DataLabel="Value" Style="text-align:end;width:120px">@context.Value</MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager />
+        <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right"  />
     </PagerContent>
 </MudTable>
-
+</div>
 @code {
-    
-    
+
+    [Parameter] public string symbol { get; set; }
+    [Parameter] public EventCallback<string> symbolChanged { get; set; }
     [Parameter] public IEnumerable<Observation> obs { get; set; }
     [Parameter] public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
 
 
-
-    protected override async Task OnInitializedAsync()
-    {
-    }
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-    private void OnobsChanged(ChangeEventArgs e)
-    {
-        int junk = 1;
-    }
-
-
     private async Task<TableData<Observation>> LoadObservations(TableState tableState)
     {
-        // Uncomment ShowLoading when this issue is fixed
-        // https://github.com/dotnet/aspnetcore/issues/30070
-
-        //await MessageService.ShowLoading();
-        //await MessageService.HideLoading();
-
-        if (obs == null)
+        if (obs is null)
             return new TableData<Observation>();
 
-        int junk = obs.Count();
-        return new TableData<Observation> { TotalItems = obs.Count(), Items = obs };
+        IEnumerable<Observation> page = obs.Skip(tableState.PageSize * tableState.Page).Take(tableState.PageSize);
+
+        return new TableData<Observation> { TotalItems = obs.Count(), Items = page };
     }
 
 }

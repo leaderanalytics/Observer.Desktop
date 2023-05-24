@@ -1,0 +1,17 @@
+﻿
+
+@code {
+
+    [Inject] protected MessageService MessageService { get; set; }
+    [Inject] protected IDialogService DialogService { get; set; }
+    [Inject] protected IContainer container { get; set; }
+    protected IAdaptiveClient<IObserverAPI_Manifest> serviceClient;
+    protected const string pagerFormat = "{first_item}-{last_item} of {all_items}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        serviceClient = scope.Resolve<IAdaptiveClient<IObserverAPI_Manifest>>();
+    }
+}

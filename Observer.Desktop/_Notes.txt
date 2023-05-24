@@ -1,0 +1,3 @@
+﻿--- Ubuntu publishing ---
+https://askubuntu.com/questions/71510/how-do-i-create-a-ppa
+https://packaging.ubuntu.com/html/getting-set-up.html

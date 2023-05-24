@@ -1,17 +1,16 @@
 ﻿@page "/"
-
+@inherits BasePage
 <!--<MudButton Variant="Variant.Filled" @onclick="ShowMessage">Show Message</MudButton>
 <button @onload="@(async x => await ShowMessage())">Click me</button>-->
 @*breaks*@
 <!--<button onload="@ShowMessage()">Click me</button>--> @*breaks*@
 
 @code {
-    [Inject] private MessageService MessageService { get; set; } // remove
+    
 
 
     private async Task ShowMessage()
     {
-
         await MessageService.ShowLoading();
         await Task.Delay(5000);
         await MessageService.HideLoading();

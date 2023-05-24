@@ -14,3 +14,4 @@ global using System.IO;
 global using Serilog;
 global using LeaderAnalytics.Observer.Fred.Services;
 global using MudBlazor.Services;
+global using LeaderAnalytics.AdaptiveClient;

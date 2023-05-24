@@ -1,5 +1,5 @@
 ﻿@page "/obsViewer/{symbol}"
-
+@inherits BasePage
 <MudLayout>
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
         <MudLink href="@($"seriesViewer")">
@@ -17,7 +17,7 @@
     </MudPaper>
         <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6">
             <MudTabPanel Text="List" ToolTip="List of observations" >
-                <ObsList @bind-obs="obs" />
+                <ObsList @bind-obs="obs" @bind-symbol="symbol" />
             </MudTabPanel>
             <MudTabPanel Text="Pivot Table" ToolTip="Matrix view of observations">
                 <ObsPivotTable @bind-obs="obs" />
@@ -30,8 +30,7 @@
 
 
 @code {
-    [Inject] IDialogService DialogService { get; set; }
-    //[Inject] IAdaptiveClient<IDownloaderServices> serviceClient { get; set; }
+
     [Parameter] public string symbol { get; set; }
     private bool dense { get; set; } = true;
     private IEnumerable<Observation> obs { get; set; }
@@ -39,8 +38,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        //await MessageService.ShowLoading();
         await base.OnInitializedAsync();
-
+        obs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
+        //await MessageService.HideLoading();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -49,7 +50,7 @@
 
         if (firstRender)
         {
-            //obs = await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(symbol));
+         
         }
 
     }

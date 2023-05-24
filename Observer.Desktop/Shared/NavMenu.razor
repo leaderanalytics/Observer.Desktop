@@ -1,30 +1,48 @@
 ﻿<MudNavMenu>
-    <MudNavLink class="nav-link" href="" Match="NavLinkMatch.All">
-        <span class="oi oi-home" aria-hidden="true"></span> Home
-    </MudNavLink>
+        <MudNavLink class="nav-link" href="seriesViewer">
+            <span class="oi"><MudIcon Icon="@Icons.Filled.GridOn" Size="Size.Medium" /></span> Series Viewer
+        </MudNavLink>
 
-    <MudNavLink class="nav-link" href="counter">
-        <span class="oi oi-plus" aria-hidden="true"></span> Counter
-    </MudNavLink>
-
-    <MudNavLink class="nav-link" href="fetchdata">
-        <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-    </MudNavLink>
-
-    <MudNavLink class="nav-link" href="seriesViewer">
-        <MudIcon Icon="@Icons.Custom.Uncategorized.Radioactive" Size="Size.Large" /> Series Viewer
-    </MudNavLink>
-
+        <MudNavLink class="nav-link" href="databaseMaintenance">
+            <span class="oi"><MudIcon Icon="@Icons.Filled.Save" Size="Size.Medium" /></span> Database
+        </MudNavLink>
 </MudNavMenu>
 
-
+    
 @code {
-    private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+    [Inject] NavigationManager NavigationManager { get; set; }
+    private ActiveMenu _ActiveMenu;
+    protected ActiveMenu ActiveMenu 
     {
-        collapseNavMenu = !collapseNavMenu;
+        get => _ActiveMenu;
+        set
+        {
+            if(_ActiveMenu != value)
+            {
+                _ActiveMenu = value;
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        NavigationManager.LocationChanged += LocationChanged;
+    }
+
+    private void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        string loc = e.Location.Split('/').Last();
+        ActiveMenu lastValue = ActiveMenu;
+        ActiveMenu = loc switch
+        {
+
+            "databaseMaintenance" => ActiveMenu.Database,
+            "verifyDatabase" => ActiveMenu.Database,
+            "createDatabase" => ActiveMenu.Database,
+            "deleteDatabase" => ActiveMenu.Database,
+            _ => ActiveMenu.Main
+        };
     }
 }

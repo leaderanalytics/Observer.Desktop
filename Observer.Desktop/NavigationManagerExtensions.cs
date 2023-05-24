@@ -8,6 +8,7 @@ public static class NavigationManagerExtensions
     /// </summary>
     public static string GetSection(this NavigationManager navMan)
     {
+        
         // get the absolute path with out the base path
         var currentUri = navMan.Uri.Remove(0, navMan.BaseUri.Length - 1);
         var firstElement = currentUri
