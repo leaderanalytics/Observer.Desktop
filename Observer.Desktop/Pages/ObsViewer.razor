@@ -44,17 +44,14 @@
                 _obs = value;
                 obsChanged.InvokeAsync();
             }
-
         }
     }
     public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        //await MessageService.ShowLoading();
         await base.OnInitializedAsync();
         obs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
-        //await MessageService.HideLoading();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

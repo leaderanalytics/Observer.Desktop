@@ -1,36 +1,52 @@
 ﻿@inherits BasePage
 <MudDialog>
+    
     <DialogContent>
         <MudContainer Style="max-height: 300px;">
             <MudItem xs="12" sm="12" md="12" lg="12">
-                <MudTextField @bind-Value="symbols" Label="Symbols" HelperText="Enter a comma delimited list of symobls (e.g. NROU, CPI, GNPCA)" Variant="Variant.Filled"  />
+                <MudTextField @onkeyup="Enter" AutoFocus="true" @bind-Value="symbols" Label="Symbols" HelperText="Enter a comma delimited list of symobls (e.g. NROU, CPI, GNPCA)" Variant="Variant.Filled" />
             </MudItem>
         </MudContainer>
     </DialogContent>
-    <DialogActions>
+    <DialogActions >
         <MudButton Color="Color.Primary" OnClick="OkClickHandler" Disabled="@string.IsNullOrEmpty(symbols)" >OK</MudButton>
         <MudButton Color="Color.Primary" OnClick="CancelClickHandler">Cancel</MudButton>
     </DialogActions>
+    
 </MudDialog>
 
 @code {
-
+    [Inject] ISnackbar Snackbar { get; set; }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     private string symbols { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
 
     public async Task OkClickHandler()
     {
         if (! string.IsNullOrEmpty(symbols))
-             await serviceClient.CallAsync(x => x.SeriesService.DownloadSeries(symbols));
+        {
+            await MessageService.ShowLoading();
+            string[] symbolsArray = symbols.Split(',', StringSplitOptions.TrimEntries);
+            List<RowOpResult> results = await serviceClient.CallAsync(x => x.SeriesService.DownloadSeries(symbolsArray));
+
+            foreach(RowOpResult result in results)
+            {
+                if (result.Success)
+                    Snackbar.Add($"Series {result.Message} was added successfully.", Severity.Success);
+                else
+                    Snackbar.Add(result.Message, Severity.Error);
+            }
+            await MessageService.HideLoading();
+        }
 
         MudDialog.Close(DialogResult.Ok(true)); // Control returns to the line after DialogService.Show(...)
     }
 
+    public async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+            await OkClickHandler();
+    }
 
     public void CancelClickHandler()
     {

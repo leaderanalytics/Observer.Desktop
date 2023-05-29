@@ -1,7 +1,7 @@
 ﻿@inherits BasePage
 <h3>@symbol Observations</h3>
 <div style="height:calc(100vh - 350px); display:grid; grid-template-rows: minmax(0,1fr)">
-<MudTable ServerData="@(new Func<TableState, Task<TableData<Observation>>>(LoadObservations))"  Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
+<MudTable ServerData="@(new Func<TableState, Task<TableData<Observation>>>(LoadObservations))" @ref="obsTable"  Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
     <HeaderContent>
         <MudTh><MudTableSortLabel SortLabel="obsdate_field" T="Observation">Obs Date</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="Observation">Vintage Date</MudTableSortLabel></MudTh>
@@ -21,9 +21,21 @@
 
     [Parameter] public string symbol { get; set; }
     [Parameter] public EventCallback<string> symbolChanged { get; set; }
-    [Parameter] public IEnumerable<Observation> obs { get; set; }
+    private IEnumerable<Observation> _obs;
+    [Parameter] public IEnumerable<Observation> obs 
+    {
+        get => _obs;
+        set
+        {
+            if (_obs != value)
+            {
+                _obs = value;
+                obsTable?.ReloadServerData();  // When navigating away than back to this page obsTable is null but the table still renders correctly.  IDK why.
+            }
+        }
+    }
     [Parameter] public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
-
+    private MudTable<Observation> obsTable;
 
     private async Task<TableData<Observation>> LoadObservations(TableState tableState)
     {
@@ -34,5 +46,4 @@
 
         return new TableData<Observation> { TotalItems = obs.Count(), Items = page };
     }
-
 }
