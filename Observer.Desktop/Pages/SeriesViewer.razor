@@ -9,9 +9,8 @@
         <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Delete selected series</MudButton>
     </MudPaper>
     <div style="height:calc(100vh - 300px); display:grid; grid-template-rows: minmax(0,1fr)">
-    <MudTable 
-        ServerData="@(new Func<TableState, Task<TableData<Series>>>(LoadSeries))" 
-            Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" FixedHeader="true" Height="100%" RowsPerPage="100">
+    <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))"
+                  Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" FixedHeader="true" Height="100%" RowsPerPage="100">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Local Series</MudText>
             <MudSpacer />
@@ -19,11 +18,11 @@
                           AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh><MudTableSortLabel SortLabel="symbol_field" T="Series">Symbol</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortLabel="title_field" T="Series">Title</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortLabel="frequency_field" T="Series">Frequency</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortLabel="units_field" T="Series">Units</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortLabel="seasonalAdj_field" T="Series">Seasonal Adj</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="symbol_field" T="FredSeries">Symbol</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="title_field" T="FredSeries">Title</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="frequency_field" T="FredSeries">Frequency</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="units_field" T="FredSeries">Units</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="seasonalAdj_field" T="FredSeries">Seasonal Adj</MudTableSortLabel></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Symbol">
@@ -56,9 +55,9 @@
 
     [Inject] ISnackbar Snackbar { get; set; }
 
-    private MudTable<Series> seriesTable;
+    private MudTable<FredSeries> seriesTable;
     private string searchTitle;
-    private HashSet<Series> selectedItems { get; set; } = new HashSet<Series>();
+    private HashSet<FredSeries> selectedItems { get; set; } = new HashSet<FredSeries>();
     private int seriesCount;
 
     protected override async Task OnInitializedAsync()
@@ -145,12 +144,12 @@
 
     }
 
-    private async Task<TableData<Series>> LoadSeries(TableState tableState)
+    private async Task<TableData<FredSeries>> LoadSeries(TableState tableState)
     {
         await MessageService.ShowLoading();
-        IEnumerable<Series> series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(tableState.Page * tableState.PageSize, tableState.PageSize, searchTitle))).Item;
+        IEnumerable<FredSeries> series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(tableState.Page * tableState.PageSize, tableState.PageSize, searchTitle))).Item;
         await MessageService.HideLoading();
-        return new TableData<Series> { TotalItems = seriesCount, Items = series };
+        return new TableData<FredSeries> { TotalItems = seriesCount, Items = series };
     }
 
     private void OnSearch(string text)

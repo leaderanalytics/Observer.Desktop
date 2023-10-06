@@ -1,15 +1,15 @@
 ﻿@inherits BasePage
-<h3>@symbol Observations</h3>
+<h3>@symbol</h3>
 <div style="height:calc(100vh - 350px); display:grid; grid-template-rows: minmax(0,1fr)">
-<MudTable ServerData="@(new Func<TableState, Task<TableData<Observation>>>(LoadObservations))" @ref="obsTable"  Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
+    <MudTable ServerData="@(new Func<TableState, Task<TableData<FredObservation>>>(LoadObservations))" @ref="obsTable" Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
     <HeaderContent>
-        <MudTh><MudTableSortLabel SortLabel="obsdate_field" T="Observation">Obs Date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="Observation">Vintage Date</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="value_field" Style="width:120px" T="Observation">Value</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="obsdate_field" T="FredObservation">Obs Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="FredObservation">Vintage Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="value_field" Style="width:120px" T="FredObservation">Value</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Obs Date">@context.ObsDate.ToString("MM/dd/yyyy")</MudTd>
-        <MudTd DataLabel="Vintage Date">@context.VintageDate.ToString("MM/dd/yyyy")</MudTd>
+        <MudTd DataLabel="Obs Date">@context.ObsDate.ToString(Constants.DateFormat)</MudTd>
+        <MudTd DataLabel="Vintage Date">@context.VintageDate.ToString(Constants.DateFormat)</MudTd>
         <MudTd DataLabel="Value" Style="text-align:end;width:120px">@context.Value</MudTd>
     </RowTemplate>
     <PagerContent>
@@ -21,8 +21,8 @@
 
     [Parameter] public string symbol { get; set; }
     [Parameter] public EventCallback<string> symbolChanged { get; set; }
-    private IEnumerable<Observation> _obs;
-    [Parameter] public IEnumerable<Observation> obs 
+    private IEnumerable<FredObservation> _obs;
+    [Parameter] public IEnumerable<FredObservation> obs 
     {
         get => _obs;
         set
@@ -34,16 +34,16 @@
             }
         }
     }
-    [Parameter] public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
-    private MudTable<Observation> obsTable;
+    [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
+    private MudTable<FredObservation> obsTable;
 
-    private async Task<TableData<Observation>> LoadObservations(TableState tableState)
+    private async Task<TableData<FredObservation>> LoadObservations(TableState tableState)
     {
         if (obs is null)
-            return new TableData<Observation>();
+            return new TableData<FredObservation>();
 
-        IEnumerable<Observation> page = obs.Skip(tableState.PageSize * tableState.Page).Take(tableState.PageSize);
+        IEnumerable<FredObservation> page = obs.Skip(tableState.PageSize * tableState.Page).Take(tableState.PageSize);
 
-        return new TableData<Observation> { TotalItems = obs.Count(), Items = page };
+        return new TableData<FredObservation> { TotalItems = obs.Count(), Items = page };
     }
 }

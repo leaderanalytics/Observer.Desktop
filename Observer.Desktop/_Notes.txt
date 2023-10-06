@@ -1,3 +1,15 @@
 ﻿--- Ubuntu publishing ---
 https://askubuntu.com/questions/71510/how-do-i-create-a-ppa
 https://packaging.ubuntu.com/html/getting-set-up.html
+
+2023-06-04 Stop work to refactor Vyntix.
+Todo:  
+Clean up Pivot grid, 
+Implement Sparse/Dense data
+Implement statistics page showing count, start/end vintage and obs dates, min and max values, null count
+Implement Series Properties page showing all series metadata
+
+Create batch download for categories with option to include series and option for related categories.
+Create batch download for sources and releases with option to include series.
+ 
+

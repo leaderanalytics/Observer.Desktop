@@ -38,7 +38,7 @@
     // Cant inject these properties directly because they are registered with Autofac.  See Program.cs.
     private IDatabaseUtilities dbUtilities { get; set; }  
     private IEndPointConfiguration endPoint { get; set; }
-    private IAdaptiveClient<IObserverAPI_Manifest> serviceClient { get; set; }
+    private IAdaptiveClient<IAPI_Manifest> serviceClient { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,7 +46,7 @@
         ILifetimeScope scope = container.BeginLifetimeScope();
         dbUtilities = scope.Resolve<IDatabaseUtilities>();
         endPoint = scope.Resolve<IEndPointConfiguration>();
-        serviceClient = scope.Resolve<IAdaptiveClient<IObserverAPI_Manifest>>();
+        serviceClient = scope.Resolve<IAdaptiveClient<IAPI_Manifest>>();
         await VerifyDbClickHandler();
     }
 

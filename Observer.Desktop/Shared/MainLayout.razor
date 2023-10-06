@@ -10,10 +10,12 @@
         <MudTooltip Text="Toggle light/dark theme">
             <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@((e) => DarkMode())" />
         </MudTooltip>
+        <MudContainer Class="d-flex flex-grow-1 flex-row justify-end">
+            <MudImage Src="logo.png" Width="250" />
+        </MudContainer>
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false">
-        <MudDrawerHeader Class="" LinkToIndex="true">
-            Logo here
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false" Width="300px" >
+        <MudDrawerHeader LinkToIndex="true">
         </MudDrawerHeader>
         <NavMenu @ref="@_navMenuRef" />
     </MudDrawer>

@@ -20,7 +20,7 @@
                 <ObsList @bind-obs="obs" @bind-symbol="symbol" />
             </MudTabPanel>
             <MudTabPanel Text="Pivot Table" ToolTip="Matrix view of observations">
-                <ObsPivotTable @bind-obs="obs" />
+            <ObsPivotTable @bind-obs="obs" @bind-symbol="symbol" />
             </MudTabPanel>
             <MudTabPanel Text="Statistics" ToolTip="Summary information">
                 <SeriesStats />
@@ -33,8 +33,8 @@
 
     [Parameter] public string symbol { get; set; }
     private bool dense { get; set; } = true;
-    private IEnumerable<Observation> _obs { get; set; }
-    private IEnumerable<Observation> obs 
+    private IEnumerable<FredObservation> _obs { get; set; }
+    private IEnumerable<FredObservation> obs
     {
         get => _obs;
         set
@@ -46,7 +46,7 @@
             }
         }
     }
-    public EventCallback<IEnumerable<Observation>> obsChanged { get; set; }
+    public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

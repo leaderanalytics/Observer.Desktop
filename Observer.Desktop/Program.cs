@@ -5,9 +5,9 @@ using Autofac.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Hosting;
-using LeaderAnalytics.Observer.Fred.Services.Domain;
 using LeaderAnalytics.AdaptiveClient;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace Observer.Desktop;
 
@@ -60,7 +60,7 @@ class Program
             // since it does not implement IHostBuilder.
             // Add the Autofac container to the Photino service collection and inject it as needed.
             ContainerBuilder containerBuilder = new();
-            containerBuilder.AddObserverFredServices(endPoints);
+            containerBuilder.AddFredDownloaderServices(endPoints);
             containerBuilder.RegisterModule(new LeaderAnalytics.AdaptiveClient.EntityFrameworkCore.AutofacModule());
             
             if (!(endPoints?.Any(x => x.IsActive) ?? false))
