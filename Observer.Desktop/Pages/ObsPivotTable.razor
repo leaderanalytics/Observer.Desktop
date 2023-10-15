@@ -1,7 +1,9 @@
 ﻿<h3>@symbol</h3>
 <div >
     <div id="pivot-container" style="max-height:600px;overflow:auto;">
-        <LeaderPivot T="FredObservation"
+        <LeaderPivot 
+            @ref="leaderPivot"
+            T="FredObservation" 
                      DataSource="LoadObservations"
                      Measures="Measures"
                      Dimensions="Dimensions"
@@ -17,9 +19,22 @@
 @code {
     [Parameter] public string symbol { get; set; }
     [Parameter] public EventCallback<string> symbolChanged { get; set; }
-    [Parameter] public IEnumerable<FredObservation> obs { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
+    private IEnumerable<FredObservation> _obs;
+    private LeaderPivot<FredObservation> leaderPivot { get; set; }
+    [Parameter] public IEnumerable<FredObservation> obs 
+    {
+        get => _obs;
+        set
+        {
+            if (_obs != value)
+            {
+                _obs = value;
+                leaderPivot?.ReloadData();
+            }
 
+        }
+    }
     private List<Dimension<FredObservation>> Dimensions;
     private List<Measure<FredObservation>> Measures;
     private LeaderPivotStyle SelectedPivotStyle;
@@ -31,6 +46,7 @@
         SelectedPivotStyle.GroupHeaderCell += " groupHeaderNoWrap";
         Dimensions = new List<Dimension<FredObservation>>(4);
         Measures = new List<Measure<FredObservation>>(2);
+        
 
         Dimensions.AddRange(new Dimension<FredObservation>[] {
             new Dimension<FredObservation>
@@ -65,7 +81,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-
+        
     }
 
     private void OnobsChanged(ChangeEventArgs e)

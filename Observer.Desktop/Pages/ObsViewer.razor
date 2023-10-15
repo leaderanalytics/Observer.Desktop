@@ -9,7 +9,7 @@
         </MudLink>
         <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" Color="Color.Default" Style="text-transform:none">Excel</MudButton>
         <div class="d-flex justify-content-center align-content-center">
-            <MudRadioGroup @bind-SelectedOption="@dense" Class="d-flex justify-content-center align-content-center">
+            <MudRadioGroup @bind-SelectedOption="@showDenseObs" Class="d-flex justify-content-center align-content-center">
                 <MudRadio Color="Color.Primary" Option="@(true)">Dense</MudRadio>
                 <MudRadio Color="Color.Primary" Option="@(false)">Sparse</MudRadio>
             </MudRadioGroup>
@@ -17,7 +17,7 @@
     </MudPaper>
         <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6">
             <MudTabPanel Text="List" ToolTip="List of observations" >
-                <ObsList @bind-obs="obs" @bind-symbol="symbol" />
+            <ObsList @bind-obs="obs" @bind-symbol="symbol" />
             </MudTabPanel>
             <MudTabPanel Text="Pivot Table" ToolTip="Matrix view of observations">
             <ObsPivotTable @bind-obs="obs" @bind-symbol="symbol" />
@@ -32,26 +32,69 @@
 @code {
 
     [Parameter] public string symbol { get; set; }
-    private bool dense { get; set; } = true;
-    private IEnumerable<FredObservation> _obs { get; set; }
-    private IEnumerable<FredObservation> obs
+    [Inject] IContainer container { get; set; }
+    private VintageComposerService composerService;
+    private bool _showDenseObs;
+    private bool showDenseObs
     {
-        get => _obs;
+        get => _showDenseObs;
         set
         {
-            if (_obs != value)
+            if (_showDenseObs != value)
             {
-                _obs = value;
+                _showDenseObs = value;
                 obsChanged.InvokeAsync();
             }
         }
     }
+
+
+    private IEnumerable<FredObservation> obs
+    { 
+        get => showDenseObs ? denseObs : sparseObs;
+        set { var dummy = value; }
+    }
+
+
+    private IEnumerable<FredObservation> _denseObs { get; set; }
+    private IEnumerable<FredObservation> denseObs
+    {
+        get
+        {
+            if (_denseObs is null && (sparseObs?.Any() ?? false))
+            {
+                _denseObs = composerService.MakeDense(sparseObs.ToList<IFredObservation>()).Cast<FredObservation>().ToList();
+            }
+            return _denseObs;
+        }
+
+    }
+
+    private IEnumerable<FredObservation> _sparseObs { get; set; }
+    private IEnumerable<FredObservation> sparseObs
+    {
+        get => _sparseObs;
+        set
+        {
+            if (_sparseObs != value)
+            {
+                _sparseObs = value;
+                _denseObs = null;
+                sparseObsChanged.InvokeAsync();
+                denseObsChanged.InvokeAsync();
+                obsChanged.InvokeAsync();
+            }
+        }
+    }
+    public EventCallback<IEnumerable<FredObservation>> sparseObsChanged { get; set; }
+    public EventCallback<IEnumerable<FredObservation>> denseObsChanged { get; set; }
     public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        obs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
+        composerService = container.Resolve<VintageComposerService>();
+        sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

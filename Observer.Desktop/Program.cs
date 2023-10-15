@@ -80,10 +80,10 @@ class Program
             builder.Services.AddMudServices();
             builder.Services.AddLeaderPivot();
             //builder.RootComponents.Add<HeadOutlet>("head::after");
-
             containerBuilder.Populate(builder.Services);
             IContainer container = containerBuilder.Build();
             builder.Services.AddSingleton(typeof(IContainer), container);
+            
             app = builder.Build();
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer");
         }
