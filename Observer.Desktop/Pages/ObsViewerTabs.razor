@@ -1,31 +1,44 @@
-﻿@page "/obsViewer/{symbol}"
+﻿@page "/obsViewerTabs/{symbol}"
 @inherits BasePage
 <MudLayout>
-    <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
+    <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around align-center">
+       
         <MudLink href="@($"seriesViewer")">
             <ChildContent>
                 <MudButton StartIcon="@Icons.Material.Filled.ArrowBackIos" Variant="Variant.Filled" Color="Color.Default" Style="text-transform:none">Series</MudButton>
             </ChildContent>
         </MudLink>
-        <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" Color="Color.Default" Style="text-transform:none">Excel</MudButton>
+
+        <h2>@symbol</h2>
+        
         <div class="d-flex justify-content-center align-content-center">
             <MudRadioGroup @bind-SelectedOption="@showDenseObs" Class="d-flex justify-content-center align-content-center">
-                <MudRadio Color="Color.Primary" Option="@(true)">Dense</MudRadio>
-                <MudRadio Color="Color.Primary" Option="@(false)">Sparse</MudRadio>
+                <MudRadio Option="@(true)">Dense</MudRadio>
+                <MudRadio Option="@(false)">Sparse</MudRadio>
             </MudRadioGroup>
         </div>
     </MudPaper>
-        <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6">
-            <MudTabPanel Text="List" ToolTip="List of observations" >
+    <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" KeepPanelsAlive="false" >
+        <MudTabPanel Text="Graph" ToolTip="Grpah of observation values" >
+            @* https://apexcharts.github.io/Blazor-ApexCharts/ *@
+        </MudTabPanel>
+
+        <MudTabPanel Text="List" ToolTip="Observations in list format" >
             <ObsList @bind-obs="obs" @bind-symbol="symbol" />
-            </MudTabPanel>
-            <MudTabPanel Text="Pivot Table" ToolTip="Matrix view of observations">
+        </MudTabPanel>
+
+        <MudTabPanel Text="Pivot Table" ToolTip="Observations as a configurable matrix">
             <ObsPivotTable @bind-obs="obs" @bind-symbol="symbol" />
-            </MudTabPanel>
-            <MudTabPanel Text="Statistics" ToolTip="Summary information">
-                <SeriesStats />
-            </MudTabPanel>
-        </MudTabs>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Statistics" ToolTip="Summary information">
+            <SeriesStats @bind-symbol="symbol" />
+        </MudTabPanel>
+
+        <MudTabPanel Text="Export" ToolTip="Export data">
+            <ExportData @bind-obs="obs" @bind-symbol="symbol" />
+        </MudTabPanel>
+    </MudTabs>
 </MudLayout>
 
 

@@ -19,3 +19,5 @@ global using LeaderAnalytics.Vyntix.Fred.Downloader;
 global using LeaderAnalytics.Vyntix.Elements;
 global using LeaderAnalytics.Vyntix.Fred.FredClient;
 global using LeaderAnalytics.Vyntix.Fred.Domain.Downloader;
+global using LeaderAnalytics.Vyntix.FileExporters;
+global using LeaderAnalytics.Vyntix.Model;

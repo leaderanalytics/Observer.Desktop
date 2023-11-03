@@ -1,0 +1,126 @@
+﻿@inherits BasePage
+
+<MudContainer Class="d-flex flex-column gap-5" Style="width:90vw;">
+
+    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+        <MudText Style="width:30vw">Vintages:</MudText>
+        <div Class="d-flex flex-row  align-center gap-8">
+            <MudCheckBox T="bool" Style="margin-left:-10px;" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox">Initial Vintage only</MudCheckBox>
+            <MudSelect Style="border-top:whitesmoke .5px solid" T="DateTime" Label="Vintages" MultiSelection="true" @bind-SelectedValues="selectedVintageDates" SelectAll="true" SelectAllText="All Vintages" Disabled="@isdisabled">
+                @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
+                {
+                    <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+        
+    </MudContainer>
+    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+        <MudText Style="width:30vw">Layout:</MudText>
+        <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Class="d-flex justify-content-center align-content-center" >
+            <MudRadio  Option="@(DataLayout.List)">List</MudRadio>
+            <MudRadio  Option="@(DataLayout.Matrix)">Matrix</MudRadio>
+        </MudRadioGroup>
+    </MudContainer>
+            
+    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+        <MudText Style="width:30vw">File Format:</MudText>
+        <MudRadioGroup @bind-SelectedOption="@args.FileFormat" Class="d-flex justify-content-center align-content-center">
+            <MudRadio Option="@(FileFormat.Excel)">Excel</MudRadio>
+            <MudRadio Option="@(FileFormat.CSV)">CSV</MudRadio>
+        </MudRadioGroup>
+    </MudContainer>
+
+    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+        <MudText Style="width:30vw">Sort Priority:</MudText>
+        <MudRadioGroup @bind-SelectedOption="@args.SortPriority" Class="d-flex justify-content-center align-content-center">
+            <MudRadio Option="@(SortPriority.ObservationDate)">Observation date, Vintage date</MudRadio>
+            <MudRadio Option="@(SortPriority.VintageDate)">Vintage date, Observation date</MudRadio>
+        </MudRadioGroup>
+    </MudContainer>
+
+    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+        <MudText Style="width:30vw">Observation sort direction:</MudText>
+        <MudRadioGroup @bind-SelectedOption="@args.ObsSortDirection" Class="d-flex justify-content-center align-content-center">
+            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
+            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
+        </MudRadioGroup>
+    </MudContainer>
+
+    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start mb-10">
+        <MudText Style="width:30vw">Vintage sort direction:</MudText>
+        <MudRadioGroup @bind-SelectedOption="@args.VintSortDirection" Class="d-flex justify-content-center align-content-center">
+            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
+            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
+        </MudRadioGroup>
+    </MudContainer>
+
+    <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" OnClick="ExportClickHandler"
+        Color="Color.Default" Class="align-self-center" Style="text-transform:none;width:150px;">Export Data
+    </MudButton>
+</MudContainer>
+
+@code {
+    [Parameter] public string symbol { get; set; }
+    [Parameter] public IEnumerable<FredObservation> obs { get; set; }
+    [Parameter] public EventCallback<string> symbolChanged { get; set; }
+    [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
+    [Inject] IJSRuntime js { get; set; }
+    private FileExportArgs args { get; set; }
+    private IEnumerable<DateTime> selectedVintageDates { get; set; }
+    private List<DateTime> vintageDates { get; set; }
+    private MudCheckBox<bool> initialReleaseCheckBox { get; set; }
+    private bool isdisabled { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderBy(x => x).ToList() ?? new List<DateTime>();
+        args = new() 
+        { 
+            FileFormat = FileFormat.Excel, SortPriority = SortPriority.ObservationDate, 
+            ObsSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending, 
+            VintSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending 
+        };
+        selectedVintageDates = new HashSet<DateTime>();
+
+    }
+
+    private async Task InitialReleaseOnlyChanged()
+    {
+        args.InitialReleaseOnly = isdisabled = initialReleaseCheckBox.Checked;
+    }
+
+    private async Task ExportClickHandler()
+    {
+        if (args.InitialReleaseOnly)
+            selectedVintageDates = vintageDates.ToHashSet();
+
+
+        if (!(selectedVintageDates?.Any() ?? false))
+        {
+            await MessageService.Error("Select at least one vintage.");
+            return;
+        }
+        List<Vintage> vintages = new();
+        var groups = obs.Where(x => selectedVintageDates.Contains(x.VintageDate)).GroupBy(x => x.VintageDate);
+
+        foreach (var grp in groups)
+        {
+            Vintage v = new Vintage { VintageDate = grp.Key, NativeID = symbol, Observations = new List<Observation>(grp.Count()) };
+
+            foreach (FredObservation fo in grp)
+                v.Observations.Add(new Observation { ObsDate = fo.ObsDate, Close = Convert.ToDecimal(fo.Value), Vintage = v });
+
+            vintages.Add(v);
+        }
+
+        IFileExporter exporter = new FileExporter();
+        string fileName = $"{symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx":"csv")}";
+        await MessageService.ShowLoading();
+        await Task.Delay(10); // or spinner wont show
+        AsyncResult<byte[]> fileContent = exporter.Export(args, vintages);
+        await js.InvokeVoidAsync("BlazorDownloadFile", fileName, fileContent.Result);
+        await MessageService.HideLoading();
+    }
+}

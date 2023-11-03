@@ -1,5 +1,70 @@
-﻿<h3>Series Stats</h3>
+﻿@inherits BasePage
+<h3>Series Statistics</h3>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-10" Style="width:90vw;">
+    <MudText Style="width:30vw">Observation Count:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">Vintage Count:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">First Vintage Date:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">Last Vintage Date:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">First Observation Date:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">Last Observation Date:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">Minimum Value:</MudText>
+</MudContainer>
+
+<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
+    <MudText Style="width:30vw">Maximum Value:</MudText>
+</MudContainer>
+
+<MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Refresh" OnClick="RefreshClickHandler"
+           Color="Color.Default" Class="align-self-center" Style="text-transform:none;width:150px;">
+    Export Data
+</MudButton>
 
 @code {
 
+    [Parameter] public string symbol { get; set; }
+    [Parameter] public IEnumerable<FredObservation> obs { get; set; }
+    [Parameter] public EventCallback<string> symbolChanged { get; set; }
+    [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
+    private SeriesStatistics stats;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (stats is null)
+            await RefreshClickHandler();
+    }
+
+
+    private async Task RefreshClickHandler()
+    {
+        LeaderAnalytics.Vyntix.Elements.RowOpResult<SeriesStatistics> result = await serviceClient.CallAsync(x => x.ObservationsService.GetSeriesStatistics(symbol));
+
+        if (!string.IsNullOrEmpty(result.Message))
+            await MessageService.Error(result.Message);
+        else
+            stats = result.Item;
+    }
 }
+
+

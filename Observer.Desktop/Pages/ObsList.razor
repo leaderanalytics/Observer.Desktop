@@ -1,5 +1,5 @@
 ﻿@inherits BasePage
-<h3>@symbol</h3>
+
 <div style="height:calc(100vh - 350px); display:grid; grid-template-rows: minmax(0,1fr)">
     <MudTable ServerData="@(new Func<TableState, Task<TableData<FredObservation>>>(LoadObservations))" @ref="obsTable" Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
     <HeaderContent>
