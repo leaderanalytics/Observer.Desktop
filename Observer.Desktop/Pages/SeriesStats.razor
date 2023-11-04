@@ -1,42 +1,47 @@
 ﻿@inherits BasePage
 <h3>Series Statistics</h3>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-10" Style="width:90vw;">
-    <MudText Style="width:30vw">Observation Count:</MudText>
-</MudContainer>
+<MudContainer Style="width:50vw;margin-left:auto;margin-right:auto;">
+    <MudContainer Class="d-flex flex-row gap-5 mt-10 " >
+        <MudText>Observation Count:</MudText>
+        <MudText Style="margin-left:auto">@((stats?.ObservationCount ?? 0).ToString("#,##0"))</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">Vintage Count:</MudText>
-</MudContainer>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3" >
+        <MudText>Vintage Count:</MudText>
+        <MudText Style="margin-left:auto">@((stats?.VintageCount ?? 0).ToString("#,##0"))</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">First Vintage Date:</MudText>
-</MudContainer>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>First Vintage Date:</MudText>
+        <MudText Style="margin-left:auto">@(stats?.FirstVintageDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">Last Vintage Date:</MudText>
-</MudContainer>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>Last Vintage Date:</MudText>
+        <MudText Style="margin-left:auto">@(stats?.LastVintageDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">First Observation Date:</MudText>
-</MudContainer>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>First Observation Date:</MudText>
+        <MudText Style="margin-left:auto">@(stats?.FirstObservationDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">Last Observation Date:</MudText>
-</MudContainer>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>Last Observation Date:</MudText>
+        <MudText Style="margin-left:auto">@(stats?.LastObservationDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">Minimum Value:</MudText>
-</MudContainer>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>Minimum Value:</MudText>
+        <MudText Style="margin-left:auto">@((stats?.MinValue ?? 0).ToString(Constants.DecimalFormat))</MudText>
+    </MudContainer>
 
-<MudContainer Class="d-flex flex-column gap-5 mt-3" Style="width:90vw;">
-    <MudText Style="width:30vw">Maximum Value:</MudText>
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>Maximum Value:</MudText>
+        <MudText Style="margin-left:auto">@((stats?.MaxValue ?? 0).ToString(Constants.DecimalFormat))</MudText>
+    </MudContainer>
 </MudContainer>
-
-<MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Refresh" OnClick="RefreshClickHandler"
-           Color="Color.Default" Class="align-self-center" Style="text-transform:none;width:150px;">
-    Export Data
-</MudButton>
 
 @code {
 

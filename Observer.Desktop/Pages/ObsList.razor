@@ -3,8 +3,8 @@
 <div style="height:calc(100vh - 350px); display:grid; grid-template-rows: minmax(0,1fr)">
     <MudTable ServerData="@(new Func<TableState, Task<TableData<FredObservation>>>(LoadObservations))" @ref="obsTable" Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
     <HeaderContent>
-            <MudTh><MudTableSortLabel SortLabel="obsdate_field" T="FredObservation">Obs Date</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortLabel="vintage_date_field" T="FredObservation">Vintage Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="@(nameof(FredObservation.ObsDate))" T="FredObservation">Obs Date</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="@(nameof(FredObservation.VintageDate))" T="FredObservation">Vintage Date</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortLabel="value_field" Style="width:120px" T="FredObservation">Value</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -42,7 +42,28 @@
         if (obs is null)
             return new TableData<FredObservation>();
 
-        IEnumerable<FredObservation> page = obs.Skip(tableState.PageSize * tableState.Page).Take(tableState.PageSize);
+        IEnumerable<FredObservation> page = obs;
+
+        if (tableState.SortDirection != SortDirection.Descending)
+        {
+            page = tableState.SortLabel switch
+            {
+                nameof(FredObservation.VintageDate) => page.OrderBy(x => x.VintageDate).ThenBy(x => x.ObsDate),
+                nameof(FredObservation.Value) => page.OrderBy(x => x.Value),
+                _ => page.OrderBy(x => x.ObsDate).ThenBy(x => x.VintageDate)
+            };
+        }
+        else
+        {
+            page = tableState.SortLabel switch
+            {
+                nameof(FredObservation.VintageDate) => page.OrderByDescending(x => x.VintageDate).ThenByDescending(x => x.ObsDate),
+                nameof(FredObservation.Value) => page.OrderByDescending(x => x.Value),
+                _ => page.OrderByDescending(x => x.ObsDate).ThenByDescending(x => x.VintageDate)
+            };
+        }
+
+        page = page.Skip(tableState.PageSize * tableState.Page).Take(tableState.PageSize);
 
         return new TableData<FredObservation> { TotalItems = obs.Count(), Items = page };
     }
