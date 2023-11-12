@@ -75,7 +75,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderBy(x => x).ToList() ?? new List<DateTime>();
+        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).ToList() ?? new List<DateTime>();
         args = new() 
         { 
             FileFormat = FileFormat.Excel, SortPriority = SortPriority.ObservationDate, 

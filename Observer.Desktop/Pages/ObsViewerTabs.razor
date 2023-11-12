@@ -19,8 +19,8 @@
         </div>
     </MudPaper>
     <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" KeepPanelsAlive="false" >
-        <MudTabPanel Text="Graph" ToolTip="Grpah of observation values" >
-            @* https://apexcharts.github.io/Blazor-ApexCharts/ *@
+        <MudTabPanel Text="Chart" ToolTip="Chart of observation values" >
+            <ObsChart @bind-obs="denseObs" @bind-symbol="symbol" />  @* Bind to denseObs only *@
         </MudTabPanel>
 
         <MudTabPanel Text="List" ToolTip="Observations in list format" >
@@ -80,7 +80,7 @@
             }
             return _denseObs;
         }
-
+        set { var dummy = value; }
     }
 
     private IEnumerable<FredObservation> _sparseObs { get; set; }
