@@ -54,27 +54,51 @@
                 Black = "#272c34"
             }
         };
-    private readonly MudTheme _darkTheme =
-    new MudTheme()
-    {
-        Palette = new Palette()
+    // private readonly MudTheme _darkTheme = new MudTheme()
+    // {
+    //     Palette = new Palette()
+    //     {
+    //         Black = "#27272f",
+    //         Background = "#32333d",
+    //         BackgroundGrey = "#27272f",
+    //         Surface = "#373740",
+    //         DrawerBackground = "#27272f",
+    //         DrawerText = "rgba(255,255,255, 0.50)",
+    //         AppbarBackground = "#27272f",
+    //         AppbarText = "rgba(255,255,255, 0.70)",
+    //         TextPrimary = "rgba(255,255,255, 0.70)",
+    //         TextSecondary = "rgba(255,255,255, 0.50)",
+    //         ActionDefault = "#adadb1",
+    //         ActionDisabled = "rgba(255,255,255, 0.26)",
+    //         ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+    //         DrawerIcon = "rgba(255,255,255, 0.50)"
+    //     }
+    // };
+
+    private readonly MudTheme _darkTheme = new MudTheme()
         {
-            Black = "#27272f",
-            Background = "#32333d",
-            BackgroundGrey = "#27272f",
-            Surface = "#373740",
-            DrawerBackground = "#27272f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#27272f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(255,255,255, 0.70)",
-            TextSecondary = "rgba(255,255,255, 0.50)",
-            ActionDefault = "#adadb1",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            DrawerIcon = "rgba(255,255,255, 0.50)"
-        }
-    };
+            Palette = new Palette()
+            {
+                Black = "#000000",
+                Background = "#172238",
+                Primary = "rgba(235, 19, 33, 1)",
+                BackgroundGrey = "rgba(250,250,250,0.1)",
+                Surface = "rgba(250,250,250,0.1)",
+                DrawerBackground = "#27272f",
+                DrawerText = "rgba(255,255,255, 0.50)",
+                AppbarBackground = "rgba(22,34,57,0.95)",
+                AppbarText = "#000000",
+                TextPrimary = "#ffffff",
+                TextSecondary = "rgba(227, 19, 33, 1)",
+                ActionDefault = "#adadb1",
+                ActionDisabled = "rgba(255,255,255, 0.26)",
+                ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+                DrawerIcon = "rgba(0,0,0, 0.50)"
+            }
+        };
+
+
+
     [Inject] private NavigationManager NavigationManager { get; set; }
 
 

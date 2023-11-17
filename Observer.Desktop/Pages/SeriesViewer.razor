@@ -3,10 +3,10 @@
 <AddSeries />
 <MudLayout>
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
-        <MudButton Variant="Variant.Filled" @onclick="AddSeriesClickHandler" Class="d-flex" Style="text-transform:none">Add series</MudButton>
-        <MudButton Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex" Style="text-transform:none">Update obs all series</MudButton>
-        <MudButton Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Update obs selected series</MudButton>
-        <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none">Delete selected series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="AddSeriesClickHandler" Class="d-flex" Style="text-transform:none;width:220px">Add series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex" Style="text-transform:none;width:220px">Update obs all series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none;width:220px">Update obs selected series</MudButton>
+        <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none;width:220px">Delete selected series</MudButton>
     </MudPaper>
     <div style="height:calc(100vh - 300px); display:grid; grid-template-rows: minmax(0,1fr)">
     <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))"
@@ -136,7 +136,10 @@
         if (confirm)
         {
             await MessageService.ShowLoading();
-            //RowOpResult result await serviceClient.CallAsync(x => x.SeriesService.DeleteSeries();
+            
+            foreach(FredSeries s in selectedItems)
+                await serviceClient.CallAsync(x => x.SeriesService.DeleteSeries(s.Symbol));
+            
             await GetSeriesCount();
             await seriesTable.ReloadServerData();
             await MessageService.HideLoading();

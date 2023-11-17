@@ -51,6 +51,11 @@
         <MudText>Real Time Start:</MudText>
         <MudText Style="margin-left:auto">@((Series?.RTStart.ToString(Constants.DateFormat) ?? "N/A"))</MudText>
     </MudContainer>
+
+    <MudContainer Class="d-flex flex-row gap-5 mt-3">
+        <MudText>Notes:</MudText>
+        <MudText Style="margin-left:auto">@((Series?.Notes ?? "No notes."))</MudText>
+    </MudContainer>
 </MudContainer>
 
     @code {
