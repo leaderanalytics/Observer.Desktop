@@ -1,45 +1,47 @@
 ﻿@inherits BasePage
 
 <MudContainer Style="width:50vw;margin-left:auto;margin-right:auto;">
-    <MudContainer Class="d-flex flex-row gap-5 mt-10 " >
-        <MudText>Observation Count:</MudText>
-        <MudText Style="margin-left:auto">@((stats?.ObservationCount ?? 0).ToString("#,##0"))</MudText>
-    </MudContainer>
+    <MudPaper Class="pa-10">
+        <MudContainer Class="d-flex flex-row gap-5 mt-10 " >
+            <MudText>Observation Count:</MudText>
+            <MudText Style="margin-left:auto">@((stats?.ObservationCount ?? 0).ToString("#,##0"))</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3" >
-        <MudText>Vintage Count:</MudText>
-        <MudText Style="margin-left:auto">@((stats?.VintageCount ?? 0).ToString("#,##0"))</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3" >
+            <MudText>Vintage Count:</MudText>
+            <MudText Style="margin-left:auto">@((stats?.VintageCount ?? 0).ToString("#,##0"))</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3">
-        <MudText>First Vintage Date:</MudText>
-        <MudText Style="margin-left:auto">@(stats?.FirstVintageDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3">
+            <MudText>First Vintage Date:</MudText>
+            <MudText Style="margin-left:auto">@(stats?.FirstVintageDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3">
-        <MudText>Last Vintage Date:</MudText>
-        <MudText Style="margin-left:auto">@(stats?.LastVintageDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3">
+            <MudText>Last Vintage Date:</MudText>
+            <MudText Style="margin-left:auto">@(stats?.LastVintageDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3">
-        <MudText>First Observation Date:</MudText>
-        <MudText Style="margin-left:auto">@(stats?.FirstObservationDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3">
+            <MudText>First Observation Date:</MudText>
+            <MudText Style="margin-left:auto">@(stats?.FirstObservationDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3">
-        <MudText>Last Observation Date:</MudText>
-        <MudText Style="margin-left:auto">@(stats?.LastObservationDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3">
+            <MudText>Last Observation Date:</MudText>
+            <MudText Style="margin-left:auto">@(stats?.LastObservationDate?.ToString(Constants.DateFormat) ?? "N/A")</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3">
-        <MudText>Minimum Value:</MudText>
-        <MudText Style="margin-left:auto">@((stats?.MinValue ?? 0).ToString(Constants.DecimalFormat))</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3">
+            <MudText>Minimum Value:</MudText>
+            <MudText Style="margin-left:auto">@((stats?.MinValue ?? 0).ToString(Constants.DecimalFormat))</MudText>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row gap-5 mt-3">
-        <MudText>Maximum Value:</MudText>
-        <MudText Style="margin-left:auto">@((stats?.MaxValue ?? 0).ToString(Constants.DecimalFormat))</MudText>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row gap-5 mt-3">
+            <MudText>Maximum Value:</MudText>
+            <MudText Style="margin-left:auto">@((stats?.MaxValue ?? 0).ToString(Constants.DecimalFormat))</MudText>
+        </MudContainer>
+    </MudPaper>
 </MudContainer>
 
 @code {

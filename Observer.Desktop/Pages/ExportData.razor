@@ -1,63 +1,64 @@
 ﻿@inherits BasePage
 
-<MudContainer Class="d-flex flex-column gap-5" Style="width:90vw;">
-
-    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-        <MudText Style="width:30vw">Vintages:</MudText>
-        <div Class="d-flex flex-row  align-center gap-8">
-            <MudCheckBox T="bool" Style="margin-left:-10px;" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox">Initial Vintage only</MudCheckBox>
-            <MudSelect Style="border-top:whitesmoke .5px solid" T="DateTime" Label="Vintages" MultiSelection="true" @bind-SelectedValues="selectedVintageDates" SelectAll="true" SelectAllText="All Vintages" Disabled="@isdisabled">
-                @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
-                {
-                    <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
-                }
-            </MudSelect>
-        </div>
+<MudContainer Style="width:90vw;">
+    <MudPaper Class="pa-10 d-flex flex-column gap-5">
+        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+            <MudText Style="width:30vw">Vintages:</MudText>
+            <div Class="d-flex flex-row  align-center gap-8">
+                <MudCheckBox T="bool" Style="margin-left:-10px;" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox">Initial Vintage only</MudCheckBox>
+                <MudSelect Style="border-top:whitesmoke .5px solid" T="DateTime" Label="Vintages" MultiSelection="true" @bind-SelectedValues="selectedVintageDates" SelectAll="true" SelectAllText="All Vintages" Disabled="@isdisabled">
+                    @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
+                    {
+                        <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
         
-    </MudContainer>
-    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-        <MudText Style="width:30vw">Layout:</MudText>
-        <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Class="d-flex justify-content-center align-content-center" >
-            <MudRadio  Option="@(DataLayout.List)">List</MudRadio>
-            <MudRadio  Option="@(DataLayout.Matrix)">Matrix</MudRadio>
-        </MudRadioGroup>
-    </MudContainer>
+        </MudContainer>
+        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+            <MudText Style="width:30vw">Layout:</MudText>
+            <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Class="d-flex justify-content-center align-content-center" >
+                <MudRadio  Option="@(DataLayout.List)">List</MudRadio>
+                <MudRadio  Option="@(DataLayout.Matrix)">Matrix</MudRadio>
+            </MudRadioGroup>
+        </MudContainer>
             
-    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-        <MudText Style="width:30vw">File Format:</MudText>
-        <MudRadioGroup @bind-SelectedOption="@args.FileFormat" Class="d-flex justify-content-center align-content-center">
-            <MudRadio Option="@(FileFormat.Excel)">Excel</MudRadio>
-            <MudRadio Option="@(FileFormat.CSV)">CSV</MudRadio>
-        </MudRadioGroup>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+            <MudText Style="width:30vw">File Format:</MudText>
+            <MudRadioGroup @bind-SelectedOption="@args.FileFormat" Class="d-flex justify-content-center align-content-center">
+                <MudRadio Option="@(FileFormat.Excel)">Excel</MudRadio>
+                <MudRadio Option="@(FileFormat.CSV)">CSV</MudRadio>
+            </MudRadioGroup>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-        <MudText Style="width:30vw">Sort Priority:</MudText>
-        <MudRadioGroup @bind-SelectedOption="@args.SortPriority" Class="d-flex justify-content-center align-content-center">
-            <MudRadio Option="@(SortPriority.ObservationDate)">Observation date, Vintage date</MudRadio>
-            <MudRadio Option="@(SortPriority.VintageDate)">Vintage date, Observation date</MudRadio>
-        </MudRadioGroup>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+            <MudText Style="width:30vw">Sort Priority:</MudText>
+            <MudRadioGroup @bind-SelectedOption="@args.SortPriority" Class="d-flex justify-content-center align-content-center">
+                <MudRadio Option="@(SortPriority.ObservationDate)">Observation date, Vintage date</MudRadio>
+                <MudRadio Option="@(SortPriority.VintageDate)">Vintage date, Observation date</MudRadio>
+            </MudRadioGroup>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-        <MudText Style="width:30vw">Observation sort direction:</MudText>
-        <MudRadioGroup @bind-SelectedOption="@args.ObsSortDirection" Class="d-flex justify-content-center align-content-center">
-            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
-            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
-        </MudRadioGroup>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
+            <MudText Style="width:30vw">Observation sort direction:</MudText>
+            <MudRadioGroup @bind-SelectedOption="@args.ObsSortDirection" Class="d-flex justify-content-center align-content-center">
+                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
+                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
+            </MudRadioGroup>
+        </MudContainer>
 
-    <MudContainer Class="d-flex flex-row pa-0 align-center justify-start mb-10">
-        <MudText Style="width:30vw">Vintage sort direction:</MudText>
-        <MudRadioGroup @bind-SelectedOption="@args.VintSortDirection" Class="d-flex justify-content-center align-content-center">
-            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
-            <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
-        </MudRadioGroup>
-    </MudContainer>
+        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start mb-10">
+            <MudText Style="width:30vw">Vintage sort direction:</MudText>
+            <MudRadioGroup @bind-SelectedOption="@args.VintSortDirection" Class="d-flex justify-content-center align-content-center">
+                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
+                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
+            </MudRadioGroup>
+        </MudContainer>
 
-    <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" OnClick="ExportClickHandler"
-        Color="Color.Default" Class="align-self-center" Style="text-transform:none;width:150px;">Export Data
-    </MudButton>
+        <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" OnClick="ExportClickHandler"
+            Color="Color.Default" Class="align-self-center" Style="text-transform:none;width:150px;">Export Data
+        </MudButton>
+    </MudPaper>
 </MudContainer>
 
 @code {

@@ -1,10 +1,9 @@
 ﻿@inherits BasePage
 <MudDialog>
-    
     <DialogContent>
         <MudContainer Style="max-height: 300px;">
             <MudItem xs="12" sm="12" md="12" lg="12">
-                <MudTextField @onkeyup="Enter" AutoFocus="true" @bind-Value="symbols" Label="Symbols" HelperText="Enter a comma delimited list of symobls (e.g. NROU, CPI, GNPCA)" Variant="Variant.Filled" />
+                <MudTextField T="string" @ref="symbolField" @onkeyup="Enter" AutoFocus="true" @bind-Value="symbols" Label="Symbols" HelperText="Enter a comma delimited list of symobls (e.g. NROU, CPI, GNPCA)" Variant="Variant.Filled" />
             </MudItem>
         </MudContainer>
     </DialogContent>
@@ -12,14 +11,21 @@
         <MudButton OnClick="OkClickHandler" Disabled="@string.IsNullOrEmpty(symbols)" >OK</MudButton>
         <MudButton OnClick="CancelClickHandler">Cancel</MudButton>
     </DialogActions>
-    
 </MudDialog>
 
 @code {
     [Inject] ISnackbar Snackbar { get; set; }
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     private string symbols { get; set; }
-
+    private MudTextField<string> symbolField { get; set; }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        
+        if(symbolField is not null)
+            await symbolField.FocusAsync();
+    }
 
     public async Task OkClickHandler()
     {
