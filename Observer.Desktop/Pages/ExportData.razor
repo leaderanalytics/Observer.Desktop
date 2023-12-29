@@ -62,9 +62,9 @@
 </MudContainer>
 
 @code {
-    [Parameter] public string symbol { get; set; }
+    [Parameter] public FredSeries series { get; set; }
+    [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     [Parameter] public IEnumerable<FredObservation> obs { get; set; }
-    [Parameter] public EventCallback<string> symbolChanged { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
     [Inject] IJSRuntime js { get; set; }
     private FileExportArgs args { get; set; }
@@ -108,7 +108,7 @@
 
         foreach (var grp in groups)
         {
-            Vintage v = new Vintage { VintageDate = grp.Key, NativeID = symbol, Observations = new List<Observation>(grp.Count()) };
+            Vintage v = new Vintage { VintageDate = grp.Key, NativeID = series.Symbol, Observations = new List<Observation>(grp.Count()) };
 
             foreach (FredObservation fo in grp)
                 v.Observations.Add(new Observation { ObsDate = fo.ObsDate, Close = Convert.ToDecimal(fo.Value), Vintage = v });
@@ -117,7 +117,7 @@
         }
 
         IFileExporter exporter = new FileExporter();
-        string fileName = $"{symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx":"csv")}";
+        string fileName = $"{series.Symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx":"csv")}";
         await MessageService.ShowLoading();
         await Task.Delay(10); // or spinner wont show
         AsyncResult<byte[]> fileContent = exporter.Export(args, vintages);

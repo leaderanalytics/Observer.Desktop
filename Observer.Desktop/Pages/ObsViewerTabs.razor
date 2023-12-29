@@ -21,27 +21,27 @@
     <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" KeepPanelsAlive="false" >
 
         <MudTabPanel Text="Properties" ToolTip="Series metadata">
-            <SeriesProperties @bind-symbol="symbol" />
+            <SeriesProperties @bind-series="series" />
         </MudTabPanel>
 
         <MudTabPanel Text="Chart" ToolTip="Chart of observation values" >
-            <ObsChart @bind-obs="denseObs" @bind-symbol="symbol" />  @* Bind to denseObs only *@
+            <ObsChart @bind-obs="denseObs" @bind-series="series" />  @* Bind to denseObs only *@
         </MudTabPanel>
 
         <MudTabPanel Text="List" ToolTip="Observations in list format" >
-            <ObsList @bind-obs="obs" @bind-symbol="symbol" />
+            <ObsList @bind-obs="obs" @bind-series="series" />
         </MudTabPanel>
 
         <MudTabPanel Text="Pivot Table" ToolTip="Observations as a configurable matrix">
-            <ObsPivotTable @bind-obs="obs" @bind-symbol="symbol" />
+            <ObsPivotTable @bind-obs="obs" @bind-series="series" />
         </MudTabPanel>
 
         <MudTabPanel Text="Statistics" ToolTip="Summary information">
-            <SeriesStats @bind-symbol="symbol" />
+            <SeriesStats @bind-series="series" />
         </MudTabPanel>
 
         <MudTabPanel Text="Export" ToolTip="Export data">
-            <ExportData @bind-obs="obs" @bind-symbol="symbol" />
+            <ExportData @bind-obs="obs" @bind-series="series" />
         </MudTabPanel>
     </MudTabs>
 </MudLayout>
@@ -107,22 +107,23 @@
     public EventCallback<IEnumerable<FredObservation>> sparseObsChanged { get; set; }
     public EventCallback<IEnumerable<FredObservation>> denseObsChanged { get; set; }
     public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
+    private FredSeries series { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         composerService = container.Resolve<VintageComposerService>();
         sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
+        await GetLocalSeries();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task GetLocalSeries()
     {
-        base.OnAfterRender(firstRender);
+        LeaderAnalytics.Vyntix.Elements.RowOpResult<FredSeries> result = await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol));
 
-        if (firstRender)
-        {
-         
-        }
-
+        if (!result.Success)
+            throw new Exception($"Error calling GetLocalSeries for symbol {symbol}.  Error message is: {result.Message}.");
+        else
+            series = result.Item;
     }
 }

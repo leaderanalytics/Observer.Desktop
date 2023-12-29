@@ -5,7 +5,7 @@
 @* https://apexcharts.github.io/Blazor-ApexCharts/ *@
 
 <div class="d-flex flex-column flex-auto"> @* dont use mud container here because max width is 1200 *@
-    <div Class="d-flex flex-row align-center justify-end gap-8 pr-5">
+    <div Class="d-flex flex-row align-center justify-end gap-8 pr-5 mb-5">
         <MudCheckBox T="bool" Class="d-flex" Style="margin-left:-10px;" Checked="initialReleases" CheckedChanged="initialReleasesChanged">Initial Vintage</MudCheckBox>
         <div style="width:200px;display:flex">
             <MudSelect 
@@ -22,8 +22,9 @@
             </MudSelect>
         </div>
     </div>
-    <MudPaper Style="background-color:white;">
-        <ApexChart TItem="FredObservation" Title="@($"Leader Analytics Observer - {symbol}")" @ref="chart" >
+    <MudPaper Style="color:black;" >
+        <ApexChart TItem="FredObservation" Title="@($"Leader Analytics Observer - {series.Symbol}")" @ref="chart" height="800" Options="@options">
+            
             @if (obs is not null)
             {
                 @if (initialReleases)
@@ -68,8 +69,9 @@
 </div>
 
 @code {
-    [Parameter] public string symbol { get; set; }
-    [Parameter] public EventCallback<string> symbolChanged { get; set; }
+    [Parameter] public FredSeries series { get; set; }
+    [Parameter] public bool hasVintageDates { get; set; }
+    [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
     private IEnumerable<FredObservation> _obs;
     [Parameter] public IEnumerable<FredObservation> obs // Always dense
@@ -88,32 +90,30 @@
     private List<DateTime> vintageDates { get; set; }
     private bool initialReleases { get; set; }
     [Inject] IContainer container { get; set; }
+    [Inject] MudThemeProvider ThemeService { get; set; }
     protected ApexChart<FredObservation> chart { get; set; }
-    //private ApexChartOptions<FredObservation> options;
+    private ApexChartOptions<FredObservation> options;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         initialReleases = true;
 
-       @*  options = new ApexChartOptions<FredObservation>
+        options = new ApexChartOptions<FredObservation>
             {
-                NoData = new NoData
-                {
-                 Text = "No Data"   
-                },
-                Tooltip = new Tooltip
-                {
-                        
-                
-                }
+                Title = new Title { Style = new TitleStyle { Color = "#FFFFFF" } },
+                Legend = new Legend { Labels = new LegendLabels { Colors = new ApexCharts.Color("#FFFFFF") } },
+                Xaxis = new XAxis { Labels = new XAxisLabels { Style = new AxisLabelStyle {  Colors = new ApexCharts.Color("#FFFFFF")} } },
+                Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color("#FFFFFF") } } } }
 
-            }; *@
+            };
     }
 
     protected void ObsChangedHandler()
     {
-        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).ToList() ?? new List<DateTime>();
+        // Only take 100 vintage dates otherwise the UI is too slow.
+        
+        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).Take(100).ToList() ?? new List<DateTime>();
         selectedVintageDates = new HashSet<DateTime>();
 
         if (vintageDates?.Any() ?? false)

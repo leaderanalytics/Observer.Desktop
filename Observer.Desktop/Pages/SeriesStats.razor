@@ -46,9 +46,9 @@
 
 @code {
 
-    [Parameter] public string symbol { get; set; }
+    [Parameter] public FredSeries series { get; set; }
     [Parameter] public IEnumerable<FredObservation> obs { get; set; }
-    [Parameter] public EventCallback<string> symbolChanged { get; set; }
+    [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
     private SeriesStatistics stats;
 
@@ -64,7 +64,7 @@
 
     private async Task RefreshClickHandler()
     {
-        LeaderAnalytics.Vyntix.Elements.RowOpResult<SeriesStatistics> result = await serviceClient.CallAsync(x => x.ObservationsService.GetSeriesStatistics(symbol));
+        LeaderAnalytics.Vyntix.Elements.RowOpResult<SeriesStatistics> result = await serviceClient.CallAsync(x => x.ObservationsService.GetSeriesStatistics(series.Symbol));
 
         if (!string.IsNullOrEmpty(result.Message))
             await MessageService.Error(result.Message);

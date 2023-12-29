@@ -1,23 +1,31 @@
-﻿<div >
-    <div id="pivot-container" style="max-height:600px;overflow:auto;">
-        <LeaderPivot 
+﻿@inherits BasePage
+<div >
+    @if (series is not null && series.HasVintages.HasValue && series.HasVintages.Value)
+    {
+        <div id="pivot-container" style="max-height:600px;overflow:auto;">
+            <LeaderPivot 
             @ref="leaderPivot"
             T="FredObservation" 
-                     DataSource="LoadObservations"
-                     Measures="Measures"
-                     Dimensions="Dimensions"
-                     DisplayGrandTotals="false"
-                     DisplayGrandTotalOption="true"
-                     DisplayDimensionButtons="true"
-                     DisplayMeasureSelectors="false"
-                     DisplayReloadDataButton="true"
-                     PivotStyle="SelectedPivotStyle">
-        </LeaderPivot>
-    </div>
+            DataSource="LoadObservations"
+            Measures="Measures"
+            Dimensions="Dimensions"
+            DisplayGrandTotals="false"
+            DisplayGrandTotalOption="true"
+            DisplayDimensionButtons="true"
+            DisplayMeasureSelectors="false"
+            DisplayReloadDataButton="true"
+            PivotStyle="SelectedPivotStyle">
+            </LeaderPivot>
+        </div>
+    }
+    else
+    {
+        <h3>This series cannot be displayed in a pivot table because all vintages are the same as the original releases.</h3>    
+    }
 </div>
 @code {
-    [Parameter] public string symbol { get; set; }
-    [Parameter] public EventCallback<string> symbolChanged { get; set; }
+    [Parameter] public FredSeries series { get; set; }
+    [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
     private IEnumerable<FredObservation> _obs;
     private LeaderPivot<FredObservation> leaderPivot { get; set; }
@@ -38,14 +46,13 @@
     private List<Measure<FredObservation>> Measures;
     private LeaderPivotStyle SelectedPivotStyle;
 
-
     public ObsPivotTable()
     {
         SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == "Dark");
         SelectedPivotStyle.GroupHeaderCell += " groupHeaderNoWrap";
         Dimensions = new List<Dimension<FredObservation>>(4);
         Measures = new List<Measure<FredObservation>>(2);
-        
+
 
         Dimensions.AddRange(new Dimension<FredObservation>[] {
             new Dimension<FredObservation>
@@ -58,10 +65,10 @@
                 Sequence = 0,
                 IsAscending = true,
                 IsEnabled = true
-                
+
             },
 
-            
+
             new Dimension<FredObservation>
             {
                 DisplayValue = "Vintage Date",
@@ -78,11 +85,6 @@
 
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        
-    }
-
     private void OnobsChanged(ChangeEventArgs e)
     {
         LoadObservations();
@@ -94,5 +96,11 @@
             return null;
 
         return obs;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadObservations();
     }
 }

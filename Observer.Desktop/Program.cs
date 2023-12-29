@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 using Photino.Blazor;
 using Autofac.Extensions.DependencyInjection;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Hosting;
-using LeaderAnalytics.AdaptiveClient;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
+//https://github.com/dotnet/docfx
 
 
 namespace Observer.Desktop;
@@ -83,6 +81,7 @@ class Program
             containerBuilder.Populate(builder.Services);
             IContainer container = containerBuilder.Build();
             builder.Services.AddSingleton(typeof(IContainer), container);
+            builder.Services.AddSingleton(new MudThemeProvider());
             
             app = builder.Build();
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer");

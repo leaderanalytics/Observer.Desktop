@@ -19,8 +19,8 @@
 </div>
 @code {
 
-    [Parameter] public string symbol { get; set; }
-    [Parameter] public EventCallback<string> symbolChanged { get; set; }
+    [Parameter] public FredSeries series { get; set; }
+    [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     private IEnumerable<FredObservation> _obs;
     [Parameter] public IEnumerable<FredObservation> obs 
     {
