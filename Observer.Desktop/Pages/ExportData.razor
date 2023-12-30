@@ -5,7 +5,12 @@
         <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
             <MudText Style="width:30vw">Vintages:</MudText>
             <div Class="d-flex flex-row  align-center gap-8">
-                <MudCheckBox T="bool" Style="margin-left:-10px;" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox">Initial Vintage only</MudCheckBox>
+                
+                @if (series is not null)
+                {
+                    <MudCheckBox T="bool" Style="margin-left:-10px;" Checked="args.InitialReleaseOnly" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox" Disabled="@(!(series.HasVintages.HasValue && series.HasVintages.Value))" >Initial Vintage only</MudCheckBox>
+                }
+
                 <MudSelect Style="border-top:whitesmoke .5px solid" T="DateTime" Label="Vintages" MultiSelection="true" @bind-SelectedValues="selectedVintageDates" SelectAll="true" SelectAllText="All Vintages" Disabled="@isdisabled">
                     @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
                     {
@@ -17,7 +22,7 @@
         </MudContainer>
         <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
             <MudText Style="width:30vw">Layout:</MudText>
-            <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Class="d-flex justify-content-center align-content-center" >
+            <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Disabled="@isdisabled" Class="d-flex justify-content-center align-content-center" >
                 <MudRadio  Option="@(DataLayout.List)">List</MudRadio>
                 <MudRadio  Option="@(DataLayout.Matrix)">Matrix</MudRadio>
             </MudRadioGroup>
@@ -76,16 +81,32 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).ToList() ?? new List<DateTime>();
-        args = new() 
-        { 
-            FileFormat = FileFormat.Excel, SortPriority = SortPriority.ObservationDate, 
+
+        isdisabled = !(series.HasVintages.HasValue && series.HasVintages.Value);
+
+        if(! isdisabled)
+            vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).ToList() ?? new List<DateTime>();
+        
+        args = new()
+        {
+            DataLayout = DataLayout.List,
+            FileFormat = FileFormat.Excel, 
+            SortPriority = SortPriority.ObservationDate, 
             ObsSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending, 
-            VintSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending 
+            VintSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending,
+                InitialReleaseOnly = isdisabled
         };
         selectedVintageDates = new HashSet<DateTime>();
 
     }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     await base.OnAfterRenderAsync(firstRender);
+    //     args.InitialReleaseOnly = isdisabled;
+    // }
+
+
 
     private async Task InitialReleaseOnlyChanged()
     {
@@ -94,17 +115,13 @@
 
     private async Task ExportClickHandler()
     {
-        if (args.InitialReleaseOnly)
-            selectedVintageDates = vintageDates.ToHashSet();
-
-
-        if (!(selectedVintageDates?.Any() ?? false))
+        if (!args.InitialReleaseOnly && !(selectedVintageDates?.Any() ?? false))
         {
             await MessageService.Error("Select at least one vintage.");
             return;
         }
         List<Vintage> vintages = new();
-        var groups = obs.Where(x => selectedVintageDates.Contains(x.VintageDate)).GroupBy(x => x.VintageDate);
+        var groups = obs.Where(x => args.InitialReleaseOnly || selectedVintageDates.Contains(x.VintageDate)).GroupBy(x => x.VintageDate);
 
         foreach (var grp in groups)
         {
@@ -115,6 +132,7 @@
 
             vintages.Add(v);
         }
+        
 
         IFileExporter exporter = new FileExporter();
         string fileName = $"{series.Symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx":"csv")}";

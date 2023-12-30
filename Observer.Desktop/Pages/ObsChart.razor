@@ -5,32 +5,38 @@
 @* https://apexcharts.github.io/Blazor-ApexCharts/ *@
 
 <div class="d-flex flex-column flex-auto"> @* dont use mud container here because max width is 1200 *@
-    <div Class="d-flex flex-row align-center justify-end gap-8 pr-5 mb-5">
-        <MudCheckBox T="bool" Class="d-flex" Style="margin-left:-10px;" Checked="initialReleases" CheckedChanged="initialReleasesChanged">Initial Vintage</MudCheckBox>
-        <div style="width:200px;display:flex">
-            <MudSelect 
+    
+    @if (series.HasVintages.HasValue && series.HasVintages.Value)
+    {
+        <div Class="d-flex flex-row align-center justify-end gap-8 pr-5 mb-5">
+            <MudCheckBox T="bool" Class="d-flex" Style="margin-left:-10px;" Checked="initialReleases" CheckedChanged="initialReleasesChanged">Initial Vintage</MudCheckBox>
+            <div style="width:200px;display:flex">
+                <MudSelect 
                 T="DateTime"
                 Style="border-top:whitesmoke .5px solid;" 
                 Label="Vintages" MultiSelection="true" 
                 SelectedValues="selectedVintageDates" 
                 SelectedValuesChanged="selectedVintageDatesChangedHandler" 
                 SelectAll="true" SelectAllText="All Vintages">
-                @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
-                {
-                    <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
-                }
-            </MudSelect>
+                    @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
+                    {
+                        <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
         </div>
-    </div>
+    }
+
+
     <MudPaper Style="color:black;" >
-        <ApexChart TItem="FredObservation" Title="@($"Leader Analytics Observer - {series.Symbol}")" @ref="chart" height="800" Options="@options">
+        <ApexChart TItem="FredObservation" Title="@($"Leader Analytics Observer - {series.Symbol}")" @ref="chart" height="800" Options="@options" >
             
             @if (obs is not null)
             {
                 @if (initialReleases)
                 {
                     <ApexPointSeries TItem="FredObservation"
-                    Items="obs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First())"
+                    Items="zoomedObs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First())"
                     Name="Initial Vintage"
                     SeriesType="SeriesType.Line"
                     XValue="@(e => e.ObsDate.ToString(Constants.DateFormat))"
@@ -42,7 +48,7 @@
                 @foreach (DateTime vintage in selectedVintageDates)
                 {
                     <ApexPointSeries TItem="FredObservation"
-                    Items="obs.Where(x => x.VintageDate == vintage)"
+                    Items="zoomedObs.Where(x => x.VintageDate == vintage)"
                     Name="@vintage.ToString(Constants.DateFormat)"
                     SeriesType="SeriesType.Line"
                     XValue="@(e => e.ObsDate.ToString(Constants.DateFormat))"
@@ -93,11 +99,15 @@
     [Inject] MudThemeProvider ThemeService { get; set; }
     protected ApexChart<FredObservation> chart { get; set; }
     private ApexChartOptions<FredObservation> options;
+    private List<FredObservation> zoomedObs { get; set; }
+    private bool isInitialized = false;
+
 
     protected override async Task OnInitializedAsync()
     {
+        isInitialized = true;
         await base.OnInitializedAsync();
-        initialReleases = true;
+        initialReleases = series.HasVintages.HasValue && series.HasVintages.Value; // Only show initial release if series has vintages
 
         options = new ApexChartOptions<FredObservation>
             {
@@ -107,18 +117,33 @@
                 Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color("#FFFFFF") } } } }
 
             };
+        
+        ObsChangedHandler();
     }
 
     protected void ObsChangedHandler()
     {
-        // Only take 100 vintage dates otherwise the UI is too slow.
-        
-        vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).Take(100).ToList() ?? new List<DateTime>();
+        if (!isInitialized)
+            return; // OnInitializedAsync has not been called yet.
+
+        int zoomRange = 180;
         selectedVintageDates = new HashSet<DateTime>();
+        zoomedObs?.Clear();
 
-        if (vintageDates?.Any() ?? false)
-            selectedVintageDates.Add(vintageDates.First());
+        if (obs?.Any() ?? false)
+        {
+            // Only take 100 vintage dates otherwise the UI is too slow.
+            vintageDates = obs.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).Take(100).ToList();
+            DateTime firstVintage = vintageDates.First();
+            selectedVintageDates.Add(firstVintage);
+            zoomedObs = obs.Where(x => x.VintageDate == firstVintage).TakeLast(zoomRange).ToList();
 
+            if (initialReleases)
+            {
+                var junk = obs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First()).TakeLast(zoomRange);
+                zoomedObs.AddRange(junk);
+            }
+        }
     }
 
     protected async Task selectedVintageDatesChangedHandler(IEnumerable<DateTime> selectedValues)
@@ -138,5 +163,13 @@
     {
         initialReleases = isChecked;    
         await chart.RenderAsync();
+    }
+
+    private async Task Zoom()
+    {
+        int zoomPeriod = 10;
+        DateTime maxObs = obs.Max(x => x.ObsDate);
+        DateTime minObs = obs.Where(x => x.ObsDate < maxObs.AddDays(-zoomPeriod)).Max(x => x.ObsDate);
+        await chart.ZoomXAsync(minObs.ToUnixTimeMilliseconds(), maxObs.ToUnixTimeMilliseconds());
     }
 }
