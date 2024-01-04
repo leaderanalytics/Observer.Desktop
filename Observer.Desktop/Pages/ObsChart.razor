@@ -29,14 +29,21 @@
 
 
     <MudPaper Style="color:black;" >
-        <ApexChart TItem="FredObservation" Title="@($"Leader Analytics Observer - {series.Symbol}")" @ref="chart" height="800" Options="@options" >
+        <ApexChart 
+            XAxisType="XAxisType.Datetime" 
+            TItem="FredObservation" 
+            Title="@($"Leader Analytics Observer - {series.Symbol}")" 
+            @ref="chart" 
+            height="800" 
+            Options="@options" 
+            OnZoomed="Zoom">
             
             @if (obs is not null)
             {
                 @if (initialReleases)
                 {
                     <ApexPointSeries TItem="FredObservation"
-                    Items="zoomedObs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First())"
+                    Items="obs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First())"
                     Name="Initial Vintage"
                     SeriesType="SeriesType.Line"
                     XValue="@(e => e.ObsDate.ToString(Constants.DateFormat))"
@@ -48,7 +55,7 @@
                 @foreach (DateTime vintage in selectedVintageDates)
                 {
                     <ApexPointSeries TItem="FredObservation"
-                    Items="zoomedObs.Where(x => x.VintageDate == vintage)"
+                    Items="obs.Where(x => x.VintageDate == vintage)"
                     Name="@vintage.ToString(Constants.DateFormat)"
                     SeriesType="SeriesType.Line"
                     XValue="@(e => e.ObsDate.ToString(Constants.DateFormat))"
@@ -99,9 +106,9 @@
     [Inject] MudThemeProvider ThemeService { get; set; }
     protected ApexChart<FredObservation> chart { get; set; }
     private ApexChartOptions<FredObservation> options;
-    private List<FredObservation> zoomedObs { get; set; }
+    //private IEnumerable<FredObservation> zoomedObs { get; set; }
     private bool isInitialized = false;
-
+    //private int zoomRange = 53; //53;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,11 +120,11 @@
             {
                 Title = new Title { Style = new TitleStyle { Color = "#FFFFFF" } },
                 Legend = new Legend { Labels = new LegendLabels { Colors = new ApexCharts.Color("#FFFFFF") } },
-                Xaxis = new XAxis { Labels = new XAxisLabels { Style = new AxisLabelStyle {  Colors = new ApexCharts.Color("#FFFFFF")} } },
+                Xaxis = new XAxis { Labels = new XAxisLabels { Style = new AxisLabelStyle {  Colors = new ApexCharts.Color("#FFFFFF")}, Format="yyyy-MM-dd" } },
                 Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color("#FFFFFF") } } } }
 
             };
-        
+
         ObsChangedHandler();
     }
 
@@ -126,23 +133,16 @@
         if (!isInitialized)
             return; // OnInitializedAsync has not been called yet.
 
-        int zoomRange = 180;
+
         selectedVintageDates = new HashSet<DateTime>();
-        zoomedObs?.Clear();
+        //   zoomedObs = Enumerable.Empty<FredObservation>();
 
         if (obs?.Any() ?? false)
         {
             // Only take 100 vintage dates otherwise the UI is too slow.
             vintageDates = obs.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).Take(100).ToList();
-            DateTime firstVintage = vintageDates.First();
-            selectedVintageDates.Add(firstVintage);
-            zoomedObs = obs.Where(x => x.VintageDate == firstVintage).TakeLast(zoomRange).ToList();
-
-            if (initialReleases)
-            {
-                var junk = obs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First()).TakeLast(zoomRange);
-                zoomedObs.AddRange(junk);
-            }
+            selectedVintageDates.Add(vintageDates.First());
+            //     zoomedObs = obs.GroupBy(x => x.VintageDate).SelectMany(x => x.OrderBy(y => y.ObsDate).TakeLast(zoomRange));
         }
     }
 
@@ -165,11 +165,23 @@
         await chart.RenderAsync();
     }
 
-    private async Task Zoom()
+    private async Task Zoom(ZoomedData<FredObservation> zoomData)
     {
-        int zoomPeriod = 10;
-        DateTime maxObs = obs.Max(x => x.ObsDate);
-        DateTime minObs = obs.Where(x => x.ObsDate < maxObs.AddDays(-zoomPeriod)).Max(x => x.ObsDate);
-        await chart.ZoomXAsync(minObs.ToUnixTimeMilliseconds(), maxObs.ToUnixTimeMilliseconds());
+        decimal start = 0;
+        decimal end = decimal.MaxValue;
+
+        if (zoomData.IsZoomed)
+        {
+            start = obs.Min(x => x.ObsDate).ToUnixTimeMilliseconds();
+            end = obs.Max(x => x.ObsDate).ToUnixTimeMilliseconds();
+            //await chart.ZoomXAsync(start, end);
+        }
+        else
+        {
+            start = obs.Min(x => x.ObsDate).ToUnixTimeMilliseconds();
+            end = obs.Max(x => x.ObsDate).ToUnixTimeMilliseconds();
+        }
+        await chart.ResetSeriesAsync(true, false);
+
     }
 }
