@@ -35,8 +35,7 @@
             Title="@($"Leader Analytics Observer - {series.Symbol}")" 
             @ref="chart" 
             height="800" 
-            Options="@options" 
-            OnZoomed="Zoom">
+            Options="@options" >
             
             @if (obs is not null)
             {
@@ -46,7 +45,7 @@
                     Items="obs.GroupBy(x => x.ObsDate).Select(x => x.OrderBy(y => y.VintageDate).First())"
                     Name="Initial Vintage"
                     SeriesType="SeriesType.Line"
-                    XValue="@(e => e.ObsDate.ToString(Constants.DateFormat))"
+                    XValue="@(e => e.ObsDate.ToUnixTimeMilliseconds())"
                     YAggregate="@(e => e.Sum(e => Convert.ToDecimal(e.Value)))"
                     OrderBy="e=>e.X" />
                 }
@@ -58,7 +57,7 @@
                     Items="obs.Where(x => x.VintageDate == vintage)"
                     Name="@vintage.ToString(Constants.DateFormat)"
                     SeriesType="SeriesType.Line"
-                    XValue="@(e => e.ObsDate.ToString(Constants.DateFormat))"
+                    XValue="@(e => e.ObsDate.ToUnixTimeMilliseconds())"
                     YAggregate="@(e => e.Sum(e => Convert.ToDecimal(e.Value)))"
                     OrderBy="e=>e.X" />
                 }
@@ -121,7 +120,8 @@
                 Title = new Title { Style = new TitleStyle { Color = "#FFFFFF" } },
                 Legend = new Legend { Labels = new LegendLabels { Colors = new ApexCharts.Color("#FFFFFF") } },
                 Xaxis = new XAxis { Labels = new XAxisLabels { Style = new AxisLabelStyle {  Colors = new ApexCharts.Color("#FFFFFF")}, Format="yyyy-MM-dd" } },
-                Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color("#FFFFFF") } } } }
+                Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color("#FFFFFF") } } } },
+                Chart = new Chart { Zoom = new ApexCharts.Zoom { AutoScaleYaxis = true } }
 
             };
 
@@ -163,25 +163,5 @@
     {
         initialReleases = isChecked;    
         await chart.RenderAsync();
-    }
-
-    private async Task Zoom(ZoomedData<FredObservation> zoomData)
-    {
-        decimal start = 0;
-        decimal end = decimal.MaxValue;
-
-        if (zoomData.IsZoomed)
-        {
-            start = obs.Min(x => x.ObsDate).ToUnixTimeMilliseconds();
-            end = obs.Max(x => x.ObsDate).ToUnixTimeMilliseconds();
-            //await chart.ZoomXAsync(start, end);
-        }
-        else
-        {
-            start = obs.Min(x => x.ObsDate).ToUnixTimeMilliseconds();
-            end = obs.Max(x => x.ObsDate).ToUnixTimeMilliseconds();
-        }
-        await chart.ResetSeriesAsync(true, false);
-
     }
 }
