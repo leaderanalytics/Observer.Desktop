@@ -81,7 +81,7 @@
                 IsEnabled = true
             }});
 
-        Measures.Add(new Measure<FredObservation> { Aggragate = x => x.Measure.Sum(y => Convert.ToDecimal(y.Value)), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
+        Measures.Add(new Measure<FredObservation> { Aggragate = x => x.Measure.Sum(y => y.Value ?? 0), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
 
     }
 

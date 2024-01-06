@@ -46,7 +46,7 @@
                     Name="Initial Vintage"
                     SeriesType="SeriesType.Line"
                     XValue="@(e => e.ObsDate.ToUnixTimeMilliseconds())"
-                    YAggregate="@(e => e.Sum(e => Convert.ToDecimal(e.Value)))"
+                    YAggregate="@(e => e.Sum(e => e.Value))"
                     OrderBy="e=>e.X" />
                 }
 
