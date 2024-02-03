@@ -23,6 +23,7 @@
                 <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.Frequency))" T="FredSeries">Frequency</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.Units))" T="FredSeries">Units</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.SeasonalAdj))" T="FredSeries">Seasonal Adj</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.LastObsCheck))" T="FredSeries">Last Obs Check</MudTableSortLabel></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Symbol">
@@ -43,6 +44,7 @@
             <MudTd DataLabel="Frequency">@context.Frequency</MudTd>
             <MudTd DataLabel="Units">@context.Units</MudTd>
             <MudTd DataLabel="Seasonal Adj">@context.SeasonalAdj</MudTd>
+            <MudTd DataLabel="Last Obs Check">@context.LastObsCheck.ToLocalTime()</MudTd>
         </RowTemplate>
         <PagerContent>
             <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right" />
@@ -121,6 +123,7 @@
                 Snackbar.Add($"Eror updating series {symbol}:  {result.Message}", Severity.Error);
 
         }
+        await seriesTable.ReloadServerData();
         await MessageService.HideLoading();
     }
 
