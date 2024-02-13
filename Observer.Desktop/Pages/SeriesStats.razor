@@ -67,7 +67,7 @@
         LeaderAnalytics.Vyntix.Elements.RowOpResult<SeriesStatistics> result = await serviceClient.CallAsync(x => x.ObservationsService.GetSeriesStatistics(series.Symbol));
 
         if (!string.IsNullOrEmpty(result.Message))
-            await MessageService.Error(result.Message);
+            await MessageBox.Error(result.Message);
         else
             stats = result.Item;
     }

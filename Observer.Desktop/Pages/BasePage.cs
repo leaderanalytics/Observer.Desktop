@@ -1,10 +1,10 @@
-﻿namespace Observer.Desktop.Pages;
+﻿namespace LeaderAnalytics.Observer.Desktop.Pages;
 
 public partial class BasePage : ComponentBase
 {
     // This .cs file replaces the .razor file of the same name due to this bug:  https://github.com/dotnet/razor/issues/8755
 
-    [Inject] protected MessageService MessageService { get; set; }
+    [Inject] protected IMessageBox MessageBox { get; set; }
     [Inject] protected IDialogService DialogService { get; set; }
     [Inject] protected IContainer container { get; set; }
     protected IAdaptiveClient<IAPI_Manifest> serviceClient;

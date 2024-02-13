@@ -7,7 +7,7 @@ using System.Collections.Generic;
 //https://github.com/dotnet/docfx
 
 
-namespace Observer.Desktop;
+namespace LeaderAnalytics.Observer.Desktop;
 
 class Program
 {
@@ -74,15 +74,14 @@ class Program
             builder.RootComponents.Add<App>("#app");
             builder.Services.AddFredClient().UseAPIKey(apiKey);
             builder.Services.AddLogging(x => x.AddConsole());
-            builder.Services.AddSingleton<MessageService>();
             builder.Services.AddMudServices();
+            builder.Services.AddMessageBoxBlazor();
             builder.Services.AddLeaderPivot();
             //builder.RootComponents.Add<HeadOutlet>("head::after");
             containerBuilder.Populate(builder.Services);
             IContainer container = containerBuilder.Build();
             builder.Services.AddSingleton(typeof(IContainer), container);
             builder.Services.AddSingleton(new MudThemeProvider());
-            
             app = builder.Build();
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer");
         }

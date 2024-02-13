@@ -31,7 +31,7 @@
     {
         if (! string.IsNullOrEmpty(symbols))
         {
-            await MessageService.ShowLoading();
+            await MessageBox.ShowLoading();
             string[] symbolsArray = symbols.Split(',', StringSplitOptions.TrimEntries);
             List<LeaderAnalytics.Vyntix.Elements.RowOpResult> results = await serviceClient.CallAsync(x => x.SeriesService.DownloadSeries(symbolsArray));
 
@@ -42,7 +42,7 @@
                 else
                     Snackbar.Add(result.Message, Severity.Error);
             }
-            await MessageService.HideLoading();
+            await MessageBox.HideLoading();
         }
 
         MudDialog.Close(DialogResult.Ok(true)); // Control returns to the line after DialogService.Show(...)

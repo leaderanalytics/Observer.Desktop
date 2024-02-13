@@ -1,0 +1,76 @@
+﻿@page "/AboutObserver"
+<style>
+    a {
+        color:silver;
+        text-decoration:underline;
+    }
+</style>
+<MudPaper Class="d-flex mt-5 mb-5 pa-3 justify-start">
+    <MudLink href="seriesViewer">
+        <ChildContent>
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBackIos" Variant="Variant.Filled" Color="Color.Default" Style="text-transform:none">Series</MudButton>
+        </ChildContent>
+    </MudLink>
+</MudPaper>
+<div style="height:10px;"></div>
+<MudPaper Class="d-flex flex-column ma-10  pa-3 justify-space-around" >
+    <MudSimpleTable>
+        <tbody>
+            <tr>
+                <td>
+                    <MudText Align="Align.Left">Version:</MudText>
+                </td>
+
+                <td>
+                    <MudText Align="Align.Right">@version</MudText>
+                </td>
+
+            </tr>
+
+                <tr>
+                    <td>
+                        <MudText Align="Align.Left">Copyright:</MudText>
+                    </td>
+
+                    <td>
+                        <MudText Align="Align.Right"><a href="http://leaderanalytics.com" target="_blank">2024 Leader Analytics</a>.</MudText>
+                    </td>
+
+                </tr>
+
+            <tr>
+                <td colspan="2">
+                    <MudText>
+                            Observer is free and open source.  Source code can be found on <a href="https://github.com/leaderanalytics/Observer" target="_blank">GitHub</a>. 
+                            Documentation can be found at <a href="https://vyntix.com/docs/observer/latest/intro.html" target="_blank">Vyntix.com</a>.
+                            Please raise an issue on our GitHub repository if you have a question about Observer or if you encounter a technical difficulty.
+                    </MudText>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" >
+                    <MudText Align="Align.Center" Class="mt-10" >
+                        This product uses the FRED® API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.
+                    </MudText>
+                    <MudText Align="Align.Center">
+                        To use Observer Desktop you must agree to <a href="https://fred.stlouisfed.org/legal/" target="_blank">FRED® Services Terms of Use</a>. If you do not agree to these terms you may not use Observer.
+                    </MudText>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+</MudPaper>
+
+
+
+
+    @code {
+
+    private string version { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        version = "Observer.Desktop v" + System.Reflection.Assembly.GetAssembly(typeof(Observer.Desktop.Program)).GetName().Version;
+    }
+}

@@ -1,4 +1,4 @@
-﻿namespace Observer.Desktop;
+﻿namespace LeaderAnalytics.Observer.Desktop;
 
 public enum ActiveMenu
 {

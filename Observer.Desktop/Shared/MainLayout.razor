@@ -6,7 +6,7 @@
 <MessageBoxProvider />
 <MudLayout>
     <MudAppBar>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        @* <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" /> *@
         <MudTooltip Text="Toggle light/dark theme">
             <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@((e) => DarkMode())" />
         </MudTooltip>
@@ -14,11 +14,11 @@
             <MudImage Src="logo.png" Width="250" />
         </MudContainer>
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false" Width="300px" >
+    @* <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false" Width="300px" >
         <MudDrawerHeader LinkToIndex="true">
         </MudDrawerHeader>
         <NavMenu @ref="@_navMenuRef" />
-    </MudDrawer>
+    </MudDrawer> *@
     <MudMainContent>
         @Body
     </MudMainContent>

@@ -1,4 +1,4 @@
-﻿namespace Observer.Desktop;
+﻿namespace LeaderAnalytics.Observer.Desktop;
 internal class Constants
 {
     public const string DateFormat = "yyyy-MM-dd";

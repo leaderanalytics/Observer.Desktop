@@ -2,20 +2,27 @@
 @using LeaderAnalytics.AdaptiveClient.EntityFrameworkCore;
 
 <MudPaper Class="m-3">
-    <h4>Database Maintenance</h4>
+    
     <MudPaper Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
+        <MudLink href="seriesViewer">
+            <ChildContent>
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBackIos" Variant="Variant.Filled" Color="Color.Default" Style="text-transform:none">Series</MudButton>
+            </ChildContent>
+        </MudLink>
         <MudButton Variant="Variant.Filled" @onclick="CreateDbClickHandler" Class="d-flex" Style="text-transform:none">Create or Update Database</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="VerifyDbClickHandler" Class="d-flex" Style="text-transform:none">Verify Database</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="DeleteDbClickHandler" Disabled="! dbExists" Class="d-flex" Style="text-transform:none">Delete Database</MudButton>
     </MudPaper>
 
-    <MudPaper Class="d-flex flex-column mt-5 mb-5 pa-3 justify-space-around">
-        <MudGrid Class="mt-5 m-lg-5 mr-5">
-            <MudItem xs="3">
-                <MudText Align="Align.Left">Database Status:</MudText>
-            </MudItem>
-            <MudItem xs="9">
-                <MudText Align="Align.Left">@dbStatus</MudText>
+    
+</MudPaper>
+<MudPaper Class="d-flex flex-column ma-10 pa-3 justify-space-around">
+    <MudGrid Class="mt-5 m-lg-5 mr-5">
+        <MudItem xs="3">
+            <MudText Align="Align.Left">Database Status:</MudText>
+        </MudItem>
+        <MudItem xs="9">
+            <MudText Align="Align.Left">@dbStatus</MudText>
             </MudItem>
             <MudItem xs="3">
                 <MudText Align="Align.Left">Connection String:</MudText>
@@ -25,14 +32,12 @@
             </MudItem>
         </MudGrid>
     </MudPaper>
-</MudPaper>
-
 
 
 @code {
     private bool dbExists;
     private string dbStatus = "Checking...";
-    [Inject] MessageService MessageService { get; set; }
+    [Inject] IMessageBox MessageBox { get; set; }
     [Inject] IContainer container { get; set; }
 
     // Cant inject these properties directly because they are registered with Autofac.  See Program.cs.
@@ -105,7 +110,7 @@
 
     private async Task DeleteDbClickHandler()
     {
-        bool ok = await MessageService.Confirm("WARNING: Deleting the database cannot be undone." 
+        bool ok = await MessageBox.Confirm("WARNING: Deleting the database cannot be undone." 
         + Environment.NewLine 
         + "All data will be deleted including data you have input or modified manually."
         + Environment.NewLine

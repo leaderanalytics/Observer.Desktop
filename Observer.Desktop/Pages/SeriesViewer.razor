@@ -1,12 +1,31 @@
 ﻿@page "/seriesViewer"
 @inherits BasePage
 <AddSeries />
+<style>
+    /* For MudMenu */
+    .mud-button 
+    {
+        text-transform:none;
+        width:220px;
+    }
+</style>
 <MudLayout>
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
         <MudButton Variant="Variant.Filled" @onclick="AddSeriesClickHandler" Class="d-flex" Style="text-transform:none;width:220px">Add series</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex" Style="text-transform:none;width:220px">Update all series</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none;width:220px">Update selected series</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none;width:220px">Delete selected series</MudButton>
+        <MudMenu Label="Tools" Variant="Variant.Filled" >
+            <MudMenuItem Href="DatabaseMaintenance">
+                <span class="oi"><MudIcon Icon="@Icons.Filled.Save" Size="Size.Small" /></span>
+                Database
+            </MudMenuItem>
+            <MudMenuItem Href="AboutObserver">
+                <span class="oi"><MudIcon Icon="@Icons.Filled.QuestionMark" Size="Size.Small" /></span>
+                About Observer
+            </MudMenuItem>
+        </MudMenu>
+        
     </MudPaper>
     <div style="height:calc(100vh - 300px); display:grid; grid-template-rows: minmax(0,1fr)">
     <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))"
@@ -53,7 +72,7 @@
     </div>
 </MudLayout>
 
-@code {
+    @code {
 
     [Inject] ISnackbar Snackbar { get; set; }
 
@@ -82,7 +101,7 @@
 
     private async Task UpdateAllSeriesClickHandler()
     {
-        if (! await MessageService.Ask("This might take a while.  Are you sure you want to continue?"))
+        if (! await MessageBox.Ask("This might take a while.  Are you sure you want to continue?"))
             return;
 
 
@@ -90,7 +109,7 @@
 
         if (symbols == null || ! symbols.Any())
         {
-            await MessageService.Info("No series have been added.  Use the Add series button to add a series to the local database.");
+            await MessageBox.Info("No series have been added.  Use the Add series button to add a series to the local database.");
             return;
         }
 
@@ -101,7 +120,7 @@
     {
         if ((selectedItems?.Count ?? 0) == 0)
         {
-            await MessageService.Info("Please select one or more series to delete.");
+            await MessageBox.Info("Please select one or more series to delete.");
             return;
         }
 
@@ -110,7 +129,7 @@
 
     private async Task UpdateSeries(IEnumerable<string> symbols)
     {
-        await MessageService.ShowLoading();
+        await MessageBox.ShowLoading();
 
         foreach (string symbol in symbols)
         {
@@ -124,35 +143,35 @@
 
         }
         await seriesTable.ReloadServerData();
-        await MessageService.HideLoading();
+        await MessageBox.HideLoading();
     }
 
     private async Task DeleteSeriesClickHandler()
     {
         if ((selectedItems?.Count ?? 0) == 0)
         {
-            await MessageService.Info("Please select one or more series to delete.");
+            await MessageBox.Info("Please select one or more series to delete.");
             return;
         }
-        bool confirm = await MessageService.Ask($"Are you sure you want to delete {selectedItems.Count} series?");
+        bool confirm = await MessageBox.Ask($"Are you sure you want to delete {selectedItems.Count} series?");
 
         if (confirm)
         {
-            await MessageService.ShowLoading();
+            await MessageBox.ShowLoading();
 
             foreach(FredSeries s in selectedItems)
                 await serviceClient.CallAsync(x => x.SeriesService.DeleteSeries(s.Symbol));
 
             await GetSeriesCount();
             await seriesTable.ReloadServerData();
-            await MessageService.HideLoading();
+            await MessageBox.HideLoading();
         }
 
     }
 
     private async Task<TableData<FredSeries>> LoadSeries(TableState tableState)
     {
-        await MessageService.ShowLoading();
+        await MessageBox.ShowLoading();
         IEnumerable<FredSeries> series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(0, int.MaxValue, searchTitle))).Item;
 
         if (tableState.SortDirection != SortDirection.Descending)
@@ -178,7 +197,7 @@
             };
         }
         series = series.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize);
-        await MessageService.HideLoading();
+        await MessageBox.HideLoading();
         return new TableData<FredSeries> { TotalItems = seriesCount, Items = series };
     }
 
@@ -188,4 +207,9 @@
         seriesTable.ReloadServerData();
     }
     private async Task GetSeriesCount() => seriesCount = await serviceClient.CallAsync(x => x.SeriesService.GetSeriesCount());
+
+    private async Task ToolsClick()
+    {
+        await MessageBox.Info("test");
+    }
 }

@@ -5,7 +5,7 @@
         <div id="pivot-container" style="max-height:600px;overflow:auto;">
             <LeaderPivot 
             @ref="leaderPivot"
-            T="FredObservation" 
+            T="FredObsRecord" 
             DataSource="LoadObservations"
             Measures="Measures"
             Dimensions="Dimensions"
@@ -14,7 +14,8 @@
             DisplayDimensionButtons="true"
             DisplayMeasureSelectors="false"
             DisplayReloadDataButton="true"
-            PivotStyle="SelectedPivotStyle">
+            PivotStyle="SelectedPivotStyle"
+            IsBusyChanged="IsBusyChanged">
             </LeaderPivot>
         </div>
     }
@@ -27,8 +28,9 @@
     [Parameter] public FredSeries series { get; set; }
     [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
+    private LeaderPivot<FredObsRecord> leaderPivot { get; set; }
+
     private IEnumerable<FredObservation> _obs;
-    private LeaderPivot<FredObservation> leaderPivot { get; set; }
     [Parameter] public IEnumerable<FredObservation> obs 
     {
         get => _obs;
@@ -37,29 +39,31 @@
             if (_obs != value)
             {
                 _obs = value;
+                CreateObsRecords(_obs);
                 leaderPivot?.ReloadData();
             }
 
         }
     }
-    private List<Dimension<FredObservation>> Dimensions;
-    private List<Measure<FredObservation>> Measures;
+    private List<Dimension<FredObsRecord>> Dimensions;
+    private List<Measure<FredObsRecord>> Measures;
+    private List<FredObsRecord> FredObsRecords;
     private LeaderPivotStyle SelectedPivotStyle;
 
     public ObsPivotTable()
     {
         SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == "Dark");
         SelectedPivotStyle.GroupHeaderCell += " groupHeaderNoWrap";
-        Dimensions = new List<Dimension<FredObservation>>(4);
-        Measures = new List<Measure<FredObservation>>(2);
+        Dimensions = new List<Dimension<FredObsRecord>>(4);
+        Measures = new List<Measure<FredObsRecord>>(2);
 
 
-        Dimensions.AddRange(new Dimension<FredObservation>[] {
-            new Dimension<FredObservation>
+        Dimensions.AddRange(new Dimension<FredObsRecord>[] {
+            new Dimension<FredObsRecord>
             {
                 DisplayValue = "Obs Date",
-                GroupValue = x => x.ObsDate.ToString(Constants.DateFormat),
-                HeaderValue = x => x.ObsDate.ToString(Constants.DateFormat),
+                GroupValue = x => x.obsDate,
+                HeaderValue = x => x.obsDate,
                 IsRow = true,
                 IsExpanded = true,
                 Sequence = 0,
@@ -69,11 +73,11 @@
             },
 
 
-            new Dimension<FredObservation>
+            new Dimension<FredObsRecord>
             {
                 DisplayValue = "Vintage Date",
-                GroupValue = x => x.VintageDate.ToString(Constants.DateFormat),
-                HeaderValue = x => x.VintageDate.ToString(Constants.DateFormat),
+                GroupValue = x => x.vintageDate,
+                HeaderValue = x => x.vintageDate,
                 IsRow = false,
                 IsExpanded = true,
                 Sequence = 0,
@@ -81,7 +85,8 @@
                 IsEnabled = true
             }});
 
-        Measures.Add(new Measure<FredObservation> { Aggragate = x => x.Measure.Sum(y => y.Value ?? 0), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
+        Measures.Add(new Measure<FredObsRecord> { Aggragate = x => x.Measure.Sum(y => y.value ?? 0), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
+        
 
     }
 
@@ -90,17 +95,52 @@
         LoadObservations();
     }
 
-    private async Task<IEnumerable<FredObservation>> LoadObservations()
+    private async Task<IEnumerable<FredObsRecord>> LoadObservations()
     {
-        if (obs == null)
-            return null;
-
-        return obs;
+        return FredObsRecords;
     }
+
+    private void CreateObsRecords(IEnumerable<FredObservation> obs)
+    {
+        if (obs is null)
+            FredObsRecords = new();
+        else
+            FredObsRecords = obs
+            .GroupBy(x => x.VintageDate)
+            .OrderByDescending(x => x.Key)
+            .Take(20)
+            .SelectMany(x => x.OrderByDescending(y => y.ObsDate).Take(250))
+            .Select(x => new FredObsRecord(x.VintageDate.ToString(Constants.DateFormat), x.ObsDate.ToString(Constants.DateFormat), x.Value)).ToList();
+    }
+
+
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await LoadObservations();
+
+    }
+    private async Task IsBusyChanged(bool isBusy)
+    {
+        if (isBusy)
+            await MessageBox.ShowLoading();
+        else
+            await MessageBox.HideLoading();
+
+    }
+
+    public class FredObsRecord
+    {
+        public string vintageDate { get; set; }
+        public string obsDate { get; set; }
+        public decimal? value { get; set; }
+
+
+        public FredObsRecord(string vintageDate, string obsDate, decimal? value)
+        {
+            this.vintageDate = vintageDate;
+            this.obsDate = obsDate;
+            this.value = value;
+        }    
     }
 }

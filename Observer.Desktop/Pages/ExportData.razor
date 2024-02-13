@@ -117,7 +117,7 @@
     {
         if (!args.InitialReleaseOnly && !(selectedVintageDates?.Any() ?? false))
         {
-            await MessageService.Error("Select at least one vintage.");
+            await MessageBox.Error("Select at least one vintage.");
             return;
         }
         List<Vintage> vintages = new();
@@ -136,10 +136,10 @@
 
         IFileExporter exporter = new FileExporter();
         string fileName = $"{series.Symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx":"csv")}";
-        await MessageService.ShowLoading();
+        await MessageBox.ShowLoading();
         await Task.Delay(10); // or spinner wont show
         AsyncResult<byte[]> fileContent = exporter.Export(args, vintages);
         await js.InvokeVoidAsync("BlazorDownloadFile", fileName, fileContent.Result);
-        await MessageService.HideLoading();
+        await MessageBox.HideLoading();
     }
 }
