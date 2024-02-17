@@ -52,11 +52,10 @@ class Program
         try
         {
             string apiKey = appConfig["FredAPI_Key"];
-            AppState appState = new();
+            AppState appState = new(new UserSettingsService());  // UserSettings read from disk and loaded here.
             IEnumerable<IEndPointConfiguration> endPoints = appConfig.GetSection("EndPoints").Get<IEnumerable<EndPointConfiguration>>();
             var builder = PhotinoBlazorAppBuilder.CreateDefault(args);
-            // Cannot call UseServiceProviderFactory() on PhotinoBlazorAppBuilder
-            // since it does not implement IHostBuilder.
+            // Cannot call UseServiceProviderFactory() on PhotinoBlazorAppBuilder since it does not implement IHostBuilder.
             // Add the Autofac container to the Photino service collection and inject it as needed.
             ContainerBuilder containerBuilder = new();
             containerBuilder.RegisterInstance(appState);
@@ -69,9 +68,6 @@ class Program
                 throw new Exception("Only one endPoint can be active at a time.  Check the EndPoints section in appsettings.json and make sure IsActive is set to True for one endPoint only.");
 
             containerBuilder.RegisterInstance(endPoints.First(x => x.IsActive)).SingleInstance();
-            
-
-
             builder.Services.AddLogging();
             builder.RootComponents.Add<App>("#app");
             builder.Services.AddFredClient().UseAPIKey(apiKey);
@@ -79,21 +75,18 @@ class Program
             builder.Services.AddMudServices();
             builder.Services.AddMessageBoxBlazor();
             builder.Services.AddLeaderPivot();
-            //builder.RootComponents.Add<HeadOutlet>("head::after");
             containerBuilder.Populate(builder.Services);
             IContainer container = containerBuilder.Build();
             builder.Services.AddSingleton(typeof(IContainer), container);
             builder.Services.AddSingleton(new MudThemeProvider());
             app = builder.Build();
-            app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer");
+            app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
         }
         catch(Exception ex)
         {
             Log.Fatal(ex.ToString());
             return;
         }
-
-        // Run app
 
         try
         {

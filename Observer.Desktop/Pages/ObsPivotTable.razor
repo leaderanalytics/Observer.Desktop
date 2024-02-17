@@ -117,7 +117,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == (AppState.IsDarkTheme ? "Dark" : "Primary"));
+        SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == (AppState.UserSettings.DarkTheme ? "Dark" : "Primary"));
         SelectedPivotStyle.GroupHeaderCell += " groupHeaderNoWrap";
 
     }

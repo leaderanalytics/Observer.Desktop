@@ -89,7 +89,7 @@
     {
         ILifetimeScope scope = container.BeginLifetimeScope();
         AppState = scope.Resolve<AppState>();
-        _currentTheme = AppState.IsDarkTheme ? _darkTheme : _defaultTheme;
+        _currentTheme = AppState.UserSettings.DarkTheme ? _darkTheme : _defaultTheme;
 
         //if not home page, the navbar starts open
         if (!NavigationManager.IsHomePage())
@@ -102,7 +102,8 @@
 
     private void DarkMode() 
     {
-        AppState.IsDarkTheme = !AppState.IsDarkTheme;
-        _currentTheme = AppState.IsDarkTheme ? _darkTheme : _defaultTheme;
+        AppState.UserSettings.DarkTheme = !AppState.UserSettings.DarkTheme;
+        _currentTheme = AppState.UserSettings.DarkTheme ? _darkTheme : _defaultTheme;
+        AppState.SaveUserSettings();
     }
 }

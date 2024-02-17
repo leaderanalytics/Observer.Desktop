@@ -1,5 +1,4 @@
 ﻿@inherits BasePage
-
 <MudContainer Style="min-width:600px;">
     <MudPaper Class="pa-10 d-flex flex-column gap-5" >
 
@@ -92,11 +91,6 @@
                 </td>
             </tr>
         </table>
-
-
-
-
-
     </MudPaper>
 </MudContainer>
 
@@ -123,24 +117,17 @@
 
         args = new()
             {
-                DataLayout = DataLayout.List,
-                FileFormat = FileFormat.Excel,
-                SortPriority = SortPriority.ObservationDate,
-                ObsSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending,
-                VintSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending,
+
+                DataLayout = AppState.UserSettings.ExportSettings.DataLayout,
+                FileFormat = AppState.UserSettings.ExportSettings.FileFormat ,
+                SortPriority = AppState.UserSettings.ExportSettings.SortPriority,
+                ObsSortDirection = AppState.UserSettings.ExportSettings.ObsSortDirection,
+                VintSortDirection = AppState.UserSettings.ExportSettings.VintSortDirection,
                 InitialReleaseOnly = isdisabled
             };
         selectedVintageDates = new HashSet<DateTime>();
 
     }
-
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     await base.OnAfterRenderAsync(firstRender);
-    //     args.InitialReleaseOnly = isdisabled;
-    // }
-
-
 
     private async Task InitialReleaseOnlyChanged()
     {
@@ -174,6 +161,15 @@
         await Task.Delay(10); // or spinner wont show
         AsyncResult<byte[]> fileContent = exporter.Export(args, vintages);
         await js.InvokeVoidAsync("BlazorDownloadFile", fileName, fileContent.Result);
+
+        // Save options as defaults
+        AppState.UserSettings.ExportSettings.DataLayout = args.DataLayout;
+        AppState.UserSettings.ExportSettings.FileFormat = args.FileFormat;
+        AppState.UserSettings.ExportSettings.SortPriority = args.SortPriority;
+        AppState.UserSettings.ExportSettings.ObsSortDirection = args.ObsSortDirection;
+        AppState.UserSettings.ExportSettings.VintSortDirection = args.VintSortDirection;
+        AppState.SaveUserSettings();
+        
         await MessageBox.HideLoading();
     }
 }

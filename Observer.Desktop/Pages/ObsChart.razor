@@ -113,7 +113,7 @@
         isInitialized = true;
         await base.OnInitializedAsync();
         initialReleases = series.HasVintages.HasValue && series.HasVintages.Value; // Only show initial release if series has vintages
-        string color = AppState.IsDarkTheme ? "#FFFFFF" : "#000000";
+        string color = AppState.UserSettings.DarkTheme ? "#FFFFFF" : "#000000";
 
         options = new ApexChartOptions<FredObservation>
             {
