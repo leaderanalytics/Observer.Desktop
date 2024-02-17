@@ -8,6 +8,7 @@ public partial class BasePage : ComponentBase
     [Inject] protected IDialogService DialogService { get; set; }
     [Inject] protected IContainer container { get; set; }
     protected IAdaptiveClient<IAPI_Manifest> serviceClient;
+    internal AppState AppState;
     protected const string pagerFormat = "{first_item}-{last_item} of {all_items}";
 
     protected override async Task OnInitializedAsync()
@@ -15,5 +16,6 @@ public partial class BasePage : ComponentBase
         await base.OnInitializedAsync();
         ILifetimeScope scope = container.BeginLifetimeScope();
         serviceClient = scope.Resolve<IAdaptiveClient<IAPI_Manifest>>();
+        AppState = scope.Resolve<AppState>();
     }
 }

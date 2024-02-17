@@ -1,5 +1,6 @@
 ﻿@inherits BasePage
 <div >
+    <MudText Class="mb-5">Pivot Table displays only 20 most recent vintages.</MudText>
     @if (series is not null && series.HasVintages.HasValue && series.HasVintages.Value)
     {
         <div id="pivot-container" style="max-height:600px;overflow:auto;">
@@ -10,11 +11,11 @@
             Measures="Measures"
             Dimensions="Dimensions"
             DisplayGrandTotals="false"
-            DisplayGrandTotalOption="true"
+            DisplayGrandTotalOption="false"
             DisplayDimensionButtons="true"
             DisplayMeasureSelectors="false"
-            DisplayReloadDataButton="true"
-            PivotStyle="SelectedPivotStyle"
+            DisplayReloadDataButton="false"
+            PivotStyle="SelectedPivotStyle" 
             IsBusyChanged="IsBusyChanged">
             </LeaderPivot>
         </div>
@@ -52,11 +53,8 @@
 
     public ObsPivotTable()
     {
-        SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == "Dark");
-        SelectedPivotStyle.GroupHeaderCell += " groupHeaderNoWrap";
         Dimensions = new List<Dimension<FredObsRecord>>(4);
         Measures = new List<Measure<FredObsRecord>>(2);
-
 
         Dimensions.AddRange(new Dimension<FredObsRecord>[] {
             new Dimension<FredObsRecord>
@@ -86,8 +84,6 @@
             }});
 
         Measures.Add(new Measure<FredObsRecord> { Aggragate = x => x.Measure.Sum(y => y.value ?? 0), DisplayValue = "Value", Format = "{0:n3}", Sequence = 1, IsEnabled = true });
-        
-
     }
 
     private void OnobsChanged(ChangeEventArgs e)
@@ -105,12 +101,15 @@
         if (obs is null)
             FredObsRecords = new();
         else
+        {
+            // Take the most recent n Vintages
             FredObsRecords = obs
             .GroupBy(x => x.VintageDate)
             .OrderByDescending(x => x.Key)
             .Take(20)
-            .SelectMany(x => x.OrderByDescending(y => y.ObsDate).Take(250))
+            .SelectMany(x => x)
             .Select(x => new FredObsRecord(x.VintageDate.ToString(Constants.DateFormat), x.ObsDate.ToString(Constants.DateFormat), x.Value)).ToList();
+        }
     }
 
 
@@ -118,14 +117,21 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        SelectedPivotStyle = LeaderPivotStyles.Styles.First(x => x.StyleName == (AppState.IsDarkTheme ? "Dark" : "Primary"));
+        SelectedPivotStyle.GroupHeaderCell += " groupHeaderNoWrap";
 
     }
     private async Task IsBusyChanged(bool isBusy)
     {
+        await Task.Delay(1);
+
         if (isBusy)
             await MessageBox.ShowLoading();
         else
             await MessageBox.HideLoading();
+            
+        await Task.Delay(1);
+        
 
     }
 

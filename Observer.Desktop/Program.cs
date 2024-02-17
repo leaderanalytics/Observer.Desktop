@@ -52,12 +52,14 @@ class Program
         try
         {
             string apiKey = appConfig["FredAPI_Key"];
+            AppState appState = new();
             IEnumerable<IEndPointConfiguration> endPoints = appConfig.GetSection("EndPoints").Get<IEnumerable<EndPointConfiguration>>();
             var builder = PhotinoBlazorAppBuilder.CreateDefault(args);
             // Cannot call UseServiceProviderFactory() on PhotinoBlazorAppBuilder
             // since it does not implement IHostBuilder.
             // Add the Autofac container to the Photino service collection and inject it as needed.
             ContainerBuilder containerBuilder = new();
+            containerBuilder.RegisterInstance(appState);
             containerBuilder.AddFredDownloaderServices(endPoints);
             containerBuilder.RegisterModule(new LeaderAnalytics.AdaptiveClient.EntityFrameworkCore.AutofacModule());
             

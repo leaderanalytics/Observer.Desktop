@@ -1,68 +1,102 @@
 ﻿@inherits BasePage
 
-<MudContainer Style="width:90vw;">
-    <MudPaper Class="pa-10 d-flex flex-column gap-5">
-        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-            <MudText Style="width:30vw">Vintages:</MudText>
-            <div Class="d-flex flex-row  align-center gap-8">
-                
-                @if (series is not null)
-                {
-                    <MudCheckBox T="bool" Style="margin-left:-10px;" Checked="args.InitialReleaseOnly" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox" Disabled="@(!(series.HasVintages.HasValue && series.HasVintages.Value))" >Initial Vintage only</MudCheckBox>
-                }
+<MudContainer Style="min-width:600px;">
+    <MudPaper Class="pa-10 d-flex flex-column gap-5" >
 
-                <MudSelect Style="border-top:whitesmoke .5px solid" T="DateTime" Label="Vintages" MultiSelection="true" @bind-SelectedValues="selectedVintageDates" SelectAll="true" SelectAllText="All Vintages" Disabled="@isdisabled">
-                    @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
-                    {
-                        <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
-                    }
-                </MudSelect>
-            </div>
-        
-        </MudContainer>
-        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-            <MudText Style="width:30vw">Layout:</MudText>
-            <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Disabled="@isdisabled" Class="d-flex justify-content-center align-content-center" >
-                <MudRadio  Option="@(DataLayout.List)">List</MudRadio>
-                <MudRadio  Option="@(DataLayout.Matrix)">Matrix</MudRadio>
-            </MudRadioGroup>
-        </MudContainer>
-            
-        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-            <MudText Style="width:30vw">File Format:</MudText>
-            <MudRadioGroup @bind-SelectedOption="@args.FileFormat" Class="d-flex justify-content-center align-content-center">
-                <MudRadio Option="@(FileFormat.Excel)">Excel</MudRadio>
-                <MudRadio Option="@(FileFormat.CSV)">CSV</MudRadio>
-            </MudRadioGroup>
-        </MudContainer>
+        <table >
 
-        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-            <MudText Style="width:30vw">Sort Priority:</MudText>
-            <MudRadioGroup @bind-SelectedOption="@args.SortPriority" Class="d-flex justify-content-center align-content-center">
-                <MudRadio Option="@(SortPriority.ObservationDate)">Observation date, Vintage date</MudRadio>
-                <MudRadio Option="@(SortPriority.VintageDate)">Vintage date, Observation date</MudRadio>
-            </MudRadioGroup>
-        </MudContainer>
+            <tr>
+                <td>
 
-        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start">
-            <MudText Style="width:30vw">Observation sort direction:</MudText>
-            <MudRadioGroup @bind-SelectedOption="@args.ObsSortDirection" Class="d-flex justify-content-center align-content-center">
-                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
-                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
-            </MudRadioGroup>
-        </MudContainer>
+                    <MudText>Vintages:</MudText>
+                </td>
+                <td>
+                    <div Class="d-flex flex-row  align-center gap-8">
 
-        <MudContainer Class="d-flex flex-row pa-0 align-center justify-start mb-10">
-            <MudText Style="width:30vw">Vintage sort direction:</MudText>
-            <MudRadioGroup @bind-SelectedOption="@args.VintSortDirection" Class="d-flex justify-content-center align-content-center">
-                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
-                <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
-            </MudRadioGroup>
-        </MudContainer>
+                        @if (series is not null)
+                        {
+                            <MudCheckBox T="bool" Style="margin-left:-10px;" Checked="args.InitialReleaseOnly" CheckedChanged="InitialReleaseOnlyChanged" @ref="initialReleaseCheckBox" Disabled="@(!(series.HasVintages.HasValue && series.HasVintages.Value))">Initial Vintage only</MudCheckBox>
+                        }
 
-        <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" OnClick="ExportClickHandler"
-            Color="Color.Default" Class="align-self-center" Style="text-transform:none;width:150px;">Export Data
-        </MudButton>
+                        <MudSelect Style="border-top:whitesmoke .5px solid" T="DateTime" Label="Vintages" MultiSelection="true" @bind-SelectedValues="selectedVintageDates" SelectAll="true" SelectAllText="All Vintages" Disabled="@isdisabled">
+                            @foreach (var vintageDate in vintageDates ?? Enumerable.Empty<DateTime>())
+                            {
+                                <MudSelectItem T="DateTime" Value="@vintageDate">@vintageDate.ToString(Constants.DateFormat)</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <MudText Style="width:30vw">Layout:</MudText>
+                </td>
+                <td>
+                    <MudRadioGroup @bind-SelectedOption="@args.DataLayout" Disabled="@isdisabled" Class="d-flex justify-content-center align-content-center">
+                        <MudRadio Option="@(DataLayout.List)">List</MudRadio>
+                        <MudRadio Option="@(DataLayout.Matrix)">Matrix</MudRadio>
+                    </MudRadioGroup>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <MudText Style="width:30vw">File Format:</MudText>
+                </td>
+                <td>
+                    <MudRadioGroup @bind-SelectedOption="@args.FileFormat" Class="d-flex justify-content-center align-content-center">
+                        <MudRadio Option="@(FileFormat.Excel)">Excel</MudRadio>
+                        <MudRadio Option="@(FileFormat.CSV)">CSV</MudRadio>
+                    </MudRadioGroup>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <MudText Style="width:30vw">Sort Priority:</MudText>
+                </td>
+                <td>
+                    <MudRadioGroup @bind-SelectedOption="@args.SortPriority" Class="d-flex justify-content-center align-content-center">
+                        <MudRadio Option="@(SortPriority.ObservationDate)">Observation date, Vintage date</MudRadio>
+                        <MudRadio Option="@(SortPriority.VintageDate)">Vintage date, Observation date</MudRadio>
+                    </MudRadioGroup>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <MudText Style="width:30vw">Observation sort direction:</MudText>
+                </td>
+                <td>
+                    <MudRadioGroup @bind-SelectedOption="@args.ObsSortDirection" Class="d-flex justify-content-center align-content-center">
+                        <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
+                        <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
+                    </MudRadioGroup>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <MudText Style="width:30vw">Vintage sort direction:</MudText>
+                </td>
+                <td>
+                    <MudRadioGroup @bind-SelectedOption="@args.VintSortDirection" Class="d-flex justify-content-center align-content-center">
+                        <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending)">Ascending</MudRadio>
+                        <MudRadio Option="@(LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending)">Descending</MudRadio>
+                    </MudRadioGroup>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align:center;">
+                    <MudButton Variant="Variant.Filled" EndIcon="@Icons.Custom.FileFormats.FileExcel" OnClick="ExportClickHandler"
+                               Color="Color.Default" Style="text-transform:none;width:150px;margin-top:20px;">
+                        Export Data
+                    </MudButton>
+                </td>
+            </tr>
+        </table>
+
+
+
+
+
     </MudPaper>
 </MudContainer>
 
@@ -84,18 +118,18 @@
 
         isdisabled = !(series.HasVintages.HasValue && series.HasVintages.Value);
 
-        if(! isdisabled)
+        if (!isdisabled)
             vintageDates = obs?.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).ToList() ?? new List<DateTime>();
-        
+
         args = new()
-        {
-            DataLayout = DataLayout.List,
-            FileFormat = FileFormat.Excel, 
-            SortPriority = SortPriority.ObservationDate, 
-            ObsSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending, 
-            VintSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending,
+            {
+                DataLayout = DataLayout.List,
+                FileFormat = FileFormat.Excel,
+                SortPriority = SortPriority.ObservationDate,
+                ObsSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Ascending,
+                VintSortDirection = LeaderAnalytics.Vyntix.FileExporters.SortDirection.Descending,
                 InitialReleaseOnly = isdisabled
-        };
+            };
         selectedVintageDates = new HashSet<DateTime>();
 
     }
@@ -132,10 +166,10 @@
 
             vintages.Add(v);
         }
-        
+
 
         IFileExporter exporter = new FileExporter();
-        string fileName = $"{series.Symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx":"csv")}";
+        string fileName = $"{series.Symbol}_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}.{(args.FileFormat == FileFormat.Excel ? "xlsx" : "csv")}";
         await MessageBox.ShowLoading();
         await Task.Delay(10); // or spinner wont show
         AsyncResult<byte[]> fileContent = exporter.Export(args, vintages);

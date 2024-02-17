@@ -10,7 +10,7 @@
         <MudTooltip Text="Toggle light/dark theme">
             <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@((e) => DarkMode())" />
         </MudTooltip>
-        <MudContainer Class="d-flex flex-grow-1 flex-row justify-end">
+        <MudContainer Class="d-flex flex-grow-1 flex-row justify-end justify-content-end" Style="padding-right:0px;margin-right:-20px;" MaxWidth="MaxWidth.ExtraExtraLarge" >
             <MudImage Src="logo.png" Width="250" />
         </MudContainer>
     </MudAppBar>
@@ -25,6 +25,7 @@
 </MudLayout>
 
 @code {
+
     private RenderFragment header;
     private bool _drawerOpen = false;
     private bool _rightToLeft = false;
@@ -45,37 +46,18 @@
 
         }
     }
-    private MudTheme _currentTheme = new MudTheme();
-    private readonly MudTheme _defaultTheme =
-        new MudTheme()
+    private MudTheme _currentTheme = new();
+    private readonly MudTheme _defaultTheme = new MudTheme
         {
             Palette = new Palette()
             {
-                Black = "#272c34"
+                Black = "#272c34",
+                    AppbarBackground = "rgba(22,34,57,0.95)"
             }
         };
-    // private readonly MudTheme _darkTheme = new MudTheme()
-    // {
-    //     Palette = new Palette()
-    //     {
-    //         Black = "#27272f",
-    //         Background = "#32333d",
-    //         BackgroundGrey = "#27272f",
-    //         Surface = "#373740",
-    //         DrawerBackground = "#27272f",
-    //         DrawerText = "rgba(255,255,255, 0.50)",
-    //         AppbarBackground = "#27272f",
-    //         AppbarText = "rgba(255,255,255, 0.70)",
-    //         TextPrimary = "rgba(255,255,255, 0.70)",
-    //         TextSecondary = "rgba(255,255,255, 0.50)",
-    //         ActionDefault = "#adadb1",
-    //         ActionDisabled = "rgba(255,255,255, 0.26)",
-    //         ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-    //         DrawerIcon = "rgba(255,255,255, 0.50)"
-    //     }
-    // };
 
-    private readonly MudTheme _darkTheme = new MudTheme()
+
+    private readonly MudTheme _darkTheme = new MudTheme
         {
             Palette = new Palette()
             {
@@ -101,11 +83,14 @@
 
 
     [Inject] private NavigationManager NavigationManager { get; set; }
-
-
+    [Inject] protected IContainer container { get; set; }
+    internal AppState AppState;
     protected override void OnInitialized()
     {
-        _currentTheme = _darkTheme;
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        AppState = scope.Resolve<AppState>();
+        _currentTheme = AppState.IsDarkTheme ? _darkTheme : _defaultTheme;
+
         //if not home page, the navbar starts open
         if (!NavigationManager.IsHomePage())
         {
@@ -115,5 +100,9 @@
 
     private void DrawerToggle() => _drawerOpen = !_drawerOpen;
 
-    private void DarkMode() => _currentTheme = _currentTheme == _defaultTheme ? _darkTheme : _defaultTheme;
+    private void DarkMode() 
+    {
+        AppState.IsDarkTheme = !AppState.IsDarkTheme;
+        _currentTheme = AppState.IsDarkTheme ? _darkTheme : _defaultTheme;
+    }
 }

@@ -46,7 +46,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Symbol">
-                <MudLink href="@($"obsViewerTabs/{context.Symbol}")">@context.Symbol</MudLink>
+                <MudLink href="@($"obsViewerTabs/{context.Symbol}/{context.Title}")">@context.Symbol</MudLink>
             </MudTd>
             <MudTd DataLabel="Title">
                 <MudTooltip>

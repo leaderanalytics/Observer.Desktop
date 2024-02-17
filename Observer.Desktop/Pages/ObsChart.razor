@@ -98,6 +98,7 @@
             }
         }
     }  
+
     private HashSet<DateTime> selectedVintageDates { get; set; }
     private List<DateTime> vintageDates { get; set; }
     private bool initialReleases { get; set; }
@@ -105,27 +106,26 @@
     [Inject] MudThemeProvider ThemeService { get; set; }
     protected ApexChart<FredObservation> chart { get; set; }
     private ApexChartOptions<FredObservation> options;
-    //private IEnumerable<FredObservation> zoomedObs { get; set; }
     private bool isInitialized = false;
-    //private int zoomRange = 53; //53;
 
     protected override async Task OnInitializedAsync()
     {
         isInitialized = true;
         await base.OnInitializedAsync();
         initialReleases = series.HasVintages.HasValue && series.HasVintages.Value; // Only show initial release if series has vintages
+        string color = AppState.IsDarkTheme ? "#FFFFFF" : "#000000";
 
         options = new ApexChartOptions<FredObservation>
             {
-                Title = new Title { Style = new TitleStyle { Color = "#FFFFFF" } },
-                Legend = new Legend { Labels = new LegendLabels { Colors = new ApexCharts.Color("#FFFFFF") } },
-                Xaxis = new XAxis { Labels = new XAxisLabels { Style = new AxisLabelStyle {  Colors = new ApexCharts.Color("#FFFFFF")}, Format="yyyy-MM-dd" } },
-                Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color("#FFFFFF") } } } },
+                Title = new Title { Style = new TitleStyle { Color = color } },
+                Legend = new Legend { Labels = new LegendLabels { Colors = new ApexCharts.Color(color) } },
+                Xaxis = new XAxis { Labels = new XAxisLabels { Style = new AxisLabelStyle {  Colors = new ApexCharts.Color(color)}, Format = Constants.DateFormat } },
+                Yaxis = new List<YAxis> { new YAxis { Labels = new YAxisLabels { Style = new AxisLabelStyle { Colors = new ApexCharts.Color(color) } } } },
                 Chart = new Chart { Zoom = new ApexCharts.Zoom { AutoScaleYaxis = true } }
-
             };
 
         ObsChangedHandler();
+        
     }
 
     protected void ObsChangedHandler()
@@ -135,14 +135,12 @@
 
 
         selectedVintageDates = new HashSet<DateTime>();
-        //   zoomedObs = Enumerable.Empty<FredObservation>();
 
         if (obs?.Any() ?? false)
         {
             // Only take 100 vintage dates otherwise the UI is too slow.
             vintageDates = obs.Select(x => x.VintageDate).Distinct().OrderByDescending(x => x).Take(100).ToList();
             selectedVintageDates.Add(vintageDates.First());
-            //     zoomedObs = obs.GroupBy(x => x.VintageDate).SelectMany(x => x.OrderBy(y => y.ObsDate).TakeLast(zoomRange));
         }
     }
 
