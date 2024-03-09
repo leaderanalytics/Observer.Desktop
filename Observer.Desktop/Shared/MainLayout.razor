@@ -6,7 +6,7 @@
 <MessageBoxProvider />
 <MudLayout>
     <MudAppBar>
-        @* <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" /> *@
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudTooltip Text="Toggle light/dark theme">
             <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@((e) => DarkMode())" />
         </MudTooltip>
@@ -14,12 +14,12 @@
             <MudImage Src="logo.png" Width="250" />
         </MudContainer>
     </MudAppBar>
-    @* <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false" Width="300px" >
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="25" Class="" Variant="DrawerVariant.Temporary" DisableOverlay="false" Width="300px" >
         <MudDrawerHeader LinkToIndex="true">
         </MudDrawerHeader>
         <NavMenu @ref="@_navMenuRef" />
-    </MudDrawer> *@
-    <MudMainContent>
+    </MudDrawer>
+    <MudMainContent Style="height:100vh">
         @Body
     </MudMainContent>
 </MudLayout>
@@ -76,6 +76,7 @@
                 ActionDefault = "#adadb1",
                 ActionDisabled = "rgba(255,255,255, 0.26)",
                 ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+                TextDisabled = "rgba(255,255,255, 0.25)",
                 DrawerIcon = "rgba(255,255,255, 1)"
             }
         };
@@ -94,7 +95,7 @@
         //if not home page, the navbar starts open
         if (!NavigationManager.IsHomePage())
         {
-            _drawerOpen = true;
+          //  _drawerOpen = true;
         }
     }
 

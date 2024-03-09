@@ -1,0 +1,130 @@
+﻿@page "/CategoryViewer/{parentID}"
+@inherits SeriesViewBasePage
+@using Downloader = LeaderAnalytics.Vyntix.Fred.Domain.Downloader;
+<MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-between gap-8">
+    <div class="d-flex flex-row gap-1 justify-start align-center" style="overflow:auto;white-space:nowrap;">
+        @{
+            ViewState v = AppState.GetViewState(View.Category);
+            foreach (LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node n in v.BreadCrumbs)
+            {
+                
+                <MudLink Class="d-flex" OnClick="@(() => PopBreadCrumb(n))">@n.EntityName</MudLink>
+                <MudText Class="d-flex">/</MudText>
+            }
+        }
+    </div>
+    <MudIconButton Title="Download Series, Observations and related data" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="DownloadClickHandler" Class="d-flex"></MudIconButton>
+</MudPaper>
+<MudTable ServerData="@(new Func<TableState, Task<TableData<Downloader.Node>>>(LoadNodes))"
+          AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="false"  @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="100">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Series Categories</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@OnSearch" Placeholder="Search" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh></MudTh>
+        <MudTh><MudTableSortLabel SortLabel="@(nameof(Downloader.Node.EntityName))" T="Downloader.Node">Name</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Entity Type" Style="width:60px;">
+            @if (context.EntityType == "C")
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Folder"></MudIcon>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Ballot"></MudIcon>
+            }
+        </MudTd>
+        <MudTd DataLabel="Name">
+            @if (context.EntityType == "C")
+            {
+   
+                <MudLink OnClick="@(() => PushBreadCrumb(context))" >@context.EntityName</MudLink>
+                
+            }
+            else
+            {
+                <MudLink Href="@($"obsViewerTabs/{context.EntityID}/{context.EntityName}/C")">@context.SeriesName</MudLink>
+            }
+            
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right" />
+    </PagerContent>
+</MudTable>
+
+
+
+@code {
+    [Parameter] public string? parentID { get; set; } // "0" if root
+    private MudTable<LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node> seriesTable;
+    private string searchTitle;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (parentID == "0")
+        {
+            ViewState v = AppState.GetViewState(View.Category);
+
+            if (!v.BreadCrumbs.Any())
+                v.BreadCrumbs.Add(new Downloader.Node(new FredCategory { Name = "Root", NativeID = "0" }, "0"));
+        }
+    }
+
+    private async Task DownloadClickHandler()
+    {
+        ViewState v = AppState.GetViewState(View.Category);
+        string catName = v.BreadCrumbs.Last().EntityName;
+
+        DialogOptions options = new DialogOptions { DisableBackdropClick = true, MaxWidth = MaxWidth.Large };
+        var result = await DialogService.Show<CategoryPathDownloadDialog>($"Select related data objects to download for category: {catName}", options).Result;
+
+        if (!result.Cancelled)
+        {
+            FredDownloadArgs args = result.Data as FredDownloadArgs;
+            args.CategoryID = parentID;
+            await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+        }
+    }
+
+    private void OnSearch(string text)
+    {
+        searchTitle = text;
+        seriesTable.ReloadServerData();
+    }
+
+    private async Task<TableData<LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node>> LoadNodes(TableState tableState)
+    {
+        await MessageBox.ShowLoading();
+        ViewState viewState = AppState.GetViewState(View.Series);
+        viewState.SortExpression = tableState.SortLabel;
+        viewState.SortAscending = tableState.SortDirection != SortDirection.Descending;
+        viewState.Skip = tableState.Page * tableState.PageSize;
+        viewState.Take = tableState.PageSize;
+        viewState.SearchText = searchTitle;
+        IEnumerable<Downloader.Node> series = await serviceClient.CallAsync(x => x.CategoriesService.GetCategoryNodes(parentID,viewState.SortAscending, viewState.SearchText, viewState.Skip, viewState.Take));
+        await MessageBox.HideLoading();
+        return new TableData<Downloader.Node> { TotalItems = int.MaxValue, Items = series };
+    }
+
+    private async Task PushBreadCrumb(LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node node)
+    {
+        ViewState v = AppState.GetViewState(View.Category);
+        v.BreadCrumbs.Add(node);
+        NavigationManager.NavigateTo($"/CategoryViewer/{node.EntityID}", true);
+    }
+
+    private async Task PopBreadCrumb(LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node node)
+    {
+        ViewState v = AppState.GetViewState(View.Category);
+        LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node breadCrumb = v.BreadCrumbs.First(x => x.EntityType == "C" && x.EntityID == node.EntityID);
+        int index = v.BreadCrumbs.IndexOf(breadCrumb);
+        v.BreadCrumbs = v.BreadCrumbs.Take(index + 1).ToList();
+        NavigationManager.NavigateTo($"/CategoryViewer/{node.EntityID}", true);
+    }
+}

@@ -1,4 +1,5 @@
 ﻿global using System;
+global using System.Collections.Generic;
 global using System.Linq;
 global using Autofac;
 global using Microsoft.AspNetCore.Components;
@@ -21,3 +22,4 @@ global using LeaderAnalytics.Vyntix.Fred.Domain.Downloader;
 global using LeaderAnalytics.Vyntix.FileExporters;
 global using LeaderAnalytics.Vyntix.Model;
 global using LeaderAnalytics.MessageBox.Blazor;
+global using LeaderAnalytics.Core;

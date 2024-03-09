@@ -1,11 +1,10 @@
-﻿@page "/obsViewerTabs/{symbol}/{title}"
+﻿@page "/obsViewerTabs/{symbol}/{title}/{caller}"
 @inherits BasePage
-<MudLayout>
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around align-center">
        
-        <MudLink href="@($"seriesViewer")">
+        <MudLink Href="@(callbackPage)">
             <ChildContent>
-                <MudButton StartIcon="@Icons.Material.Filled.ArrowBackIos" Variant="Variant.Filled" Color="Color.Default" Style="text-transform:none">Series</MudButton>
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBackIos" Variant="Variant.Filled" Color="Color.Default" Style="text-transform:none">@callbackCaption</MudButton>
             </ChildContent>
         </MudLink>
 
@@ -46,13 +45,13 @@
             <ExportData @bind-obs="obs" @bind-series="series" />
         </MudTabPanel>
     </MudTabs>
-</MudLayout>
 
 
 @code {
 
     [Parameter] public string symbol { get; set; }
     [Parameter] public string title { get; set; }
+    [Parameter] public string caller { get; set; }
     [Inject] IContainer container { get; set; }
     private VintageComposerService composerService;
     private bool _showDenseObs;
@@ -111,6 +110,8 @@
     public EventCallback<IEnumerable<FredObservation>> denseObsChanged { get; set; }
     public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
     private FredSeries series { get; set; }
+    private string callbackPage => caller == "C" ? $"/CategoryViewer/{AppState.GetViewState(View.Category).BreadCrumbs.Last().EntityID}" : "/SeriesViewer";
+    private string callbackCaption => caller == "C" ? "Categories" : "Series"; 
 
     protected override async Task OnInitializedAsync()
     {
@@ -122,11 +123,6 @@
 
     private async Task GetLocalSeries()
     {
-        LeaderAnalytics.Vyntix.Elements.RowOpResult<FredSeries> result = await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol));
-
-        if (!result.Success)
-            throw new Exception($"Error calling GetLocalSeries for symbol {symbol}.  Error message is: {result.Message}.");
-        else
-            series = result.Item;
+        series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
     }
 }

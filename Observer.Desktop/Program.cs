@@ -70,7 +70,8 @@ class Program
             containerBuilder.RegisterInstance(endPoints.First(x => x.IsActive)).SingleInstance();
             builder.Services.AddLogging();
             builder.RootComponents.Add<App>("#app");
-            builder.Services.AddFredClient().UseAPIKey(apiKey);
+            FredClientConfig config = new FredClientConfig { MaxDownloadRetries = 3, ErrorDelay = 2000, MaxRequestsPerMinute = 60 };
+            builder.Services.AddFredClient().UseAPIKey(apiKey).UseConfig(x => config);
             builder.Services.AddLogging(x => x.AddConsole());
             builder.Services.AddMudServices();
             builder.Services.AddMessageBoxBlazor();

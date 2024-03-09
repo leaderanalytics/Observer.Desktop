@@ -1,0 +1,148 @@
+﻿@inherits BasePage
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-row" style="width:600px">
+            <MudContainer Class="d-flex flex-column">
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Series" @bind-Value="args.Series"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download series metadata for each category annd optionally each child category.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Discontinued Series" @bind-Value="args.IncludeDiscontinuedSeries" Disabled="@(! args.Series)"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download series marked as Discontinued.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Observations" @bind-Value="args.Observations"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download observations for each series in the category and optionally each child category.  Vintage dates are automatically downloaded when observations are downloaded.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Series Tags" @bind-Value="args.SeriesTags"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download tags for each series.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+                
+
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Releases" @bind-Value="args.Releases"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download the release for each series.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Release Dates" @bind-Value="args.ReleaseDates" Disabled="@(! args.Releases)"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download release dates for each release.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Sources" @bind-Value="args.Sources" Disabled="@(! args.Releases)"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download sources for each release.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+            </MudContainer>
+
+            <MudContainer Class="d-flex flex-column">
+            
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Child Categories" @bind-Value="args.ChildCategories"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download child categories for the selected category.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Related Categories (slow)" @bind-Value="args.RelatedCategories"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download related categories for each category.  Many calls to the FRED API are required to download relatively few related categories so using this option is not recccomended.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+                
+
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Category Tags" @bind-Value="args.CategoryTags"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>Download tags for each category.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+
+                
+                <MudTooltip>
+                    <ChildContent>
+                        <MudCheckBox Label="Recurse Child Categories" @bind-Value="args.Recurse" Disabled="@(! args.ChildCategories)"></MudCheckBox>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText>If selected, these download options will be applied to each child category and each series in those categories, recursively, down through the category hierarchy.  Use this option with care as downloads times can easily become quite long.</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+            </MudContainer>
+        </div>
+    </DialogContent>
+    <DialogActions >
+        <MudButton OnClick="OkClickHandler">OK</MudButton>
+        <MudButton OnClick="CancelClickHandler">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private FredDownloadArgs args { get; set; } = new();
+
+
+
+    public async Task OkClickHandler()
+    {
+        MudDialog.Close(DialogResult.Ok(args)); // Control returns to the line after DialogService.Show(...)
+    }
+
+    public async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+            await OkClickHandler();
+    }
+
+    public void CancelClickHandler()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+
+    
+}

@@ -1,35 +1,14 @@
 ﻿@page "/seriesViewer"
-@inherits BasePage
+@inherits SeriesViewBasePage
 <AddSeries />
-<style>
-    /* For MudMenu */
-    .mud-button 
-    {
-        text-transform:none;
-        width:220px;
-    }
-</style>
-<MudLayout>
-    <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
-        <MudButton Variant="Variant.Filled" @onclick="AddSeriesClickHandler" Class="d-flex" Style="text-transform:none;width:220px">Add series</MudButton>
-        <MudButton Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex" Style="text-transform:none;width:220px">Update all series</MudButton>
-        <MudButton Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none;width:220px">Update selected series</MudButton>
-        <MudButton Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" Style="text-transform:none;width:220px">Delete selected series</MudButton>
-        <MudMenu Label="Tools" Variant="Variant.Filled" >
-            <MudMenuItem Href="DatabaseMaintenance">
-                <span class="oi"><MudIcon Icon="@Icons.Filled.Save" Size="Size.Small" /></span>
-                Database
-            </MudMenuItem>
-            <MudMenuItem Href="AboutObserver">
-                <span class="oi"><MudIcon Icon="@Icons.Filled.QuestionMark" Size="Size.Small" /></span>
-                About Observer
-            </MudMenuItem>
-        </MudMenu>
-        
+    <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-end gap-8">
+        <MudIconButton Title="Add Series" Size="Size.Large" Icon="@Icons.Material.Filled.Add" Variant="Variant.Filled" @onclick="AddSeriesClickHandler"  />
+        <MudIconButton Title="Update all series" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex"></MudIconButton>
+    <MudIconButton Title="Update selected series" Size="Size.Large" Icon="@Icons.Material.Filled.DownloadForOffline" Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex"></MudIconButton>
+        <MudIconButton Title="Delete selected series" Size="Size.Large" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" ></MudIconButton>
     </MudPaper>
-    <div style="height:calc(100vh - 300px); display:grid; grid-template-rows: minmax(0,1fr)">
     <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))"
-                 AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" FixedHeader="true" Height="100%" RowsPerPage="100">
+          AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="100">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Local Series</MudText>
             <MudSpacer />
@@ -46,7 +25,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Symbol">
-                <MudLink href="@($"obsViewerTabs/{context.Symbol}/{context.Title}")">@context.Symbol</MudLink>
+                <MudLink href="@($"obsViewerTabs/{context.Symbol}/{context.Title}/S")">@context.Symbol</MudLink>
             </MudTd>
             <MudTd DataLabel="Title">
                 <MudTooltip>
@@ -69,147 +48,64 @@
             <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right" />
         </PagerContent>
     </MudTable>
-    </div>
-</MudLayout>
 
-    @code {
-
-    [Inject] ISnackbar Snackbar { get; set; }
+@code {
 
     private MudTable<FredSeries> seriesTable;
     private string searchTitle;
     private HashSet<FredSeries> selectedItems { get; set; } = new HashSet<FredSeries>();
-    private int seriesCount;
+
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await GetSeriesCount();
     }
 
-    private async Task AddSeriesClickHandler()
+    protected async Task AddSeriesClickHandler()
     {
-        DialogOptions options = new DialogOptions { DisableBackdropClick = true };
-        var result = await DialogService.Show<AddSeries>("", options).Result;
-
-        if (!result.Canceled)
-        {
-            await GetSeriesCount();
+        if(await AddSeries())
             await seriesTable.ReloadServerData();
-        }
     }
 
-    private async Task UpdateAllSeriesClickHandler()
+    protected async Task UpdateAllSeriesClickHandler() 
     {
-        if (! await MessageBox.Ask("This might take a while.  Are you sure you want to continue?"))
-            return;
-
-
-        IEnumerable<string> symbols = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(0, int.MaxValue, null)))?.Item?.Select(x => x.Symbol);
-
-        if (symbols == null || ! symbols.Any())
-        {
-            await MessageBox.Info("No series have been added.  Use the Add series button to add a series to the local database.");
-            return;
-        }
-
-        await UpdateSeries(symbols);
-    }
-
-    private async Task UpdateSelectedSeriesClickHandler()
-    {
-        if ((selectedItems?.Count ?? 0) == 0)
-        {
-            await MessageBox.Info("Please select one or more series to delete.");
-            return;
-        }
-
-        await UpdateSeries(selectedItems.Select(x => x.Symbol));
-    }
-
-    private async Task UpdateSeries(IEnumerable<string> symbols)
-    {
-        await MessageBox.ShowLoading();
-
-        foreach (string symbol in symbols)
-        {
-            Snackbar.Add($"Updating series {symbol}...", Severity.Info);
-            LeaderAnalytics.Vyntix.Elements.RowOpResult result = await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol));
-
-            if (result.Success)
-                Snackbar.Add($"Series {symbol} was updated successfully.", Severity.Success);
-            else
-                Snackbar.Add($"Eror updating series {symbol}:  {result.Message}", Severity.Error);
-
-        }
-        await seriesTable.ReloadServerData();
-        await MessageBox.HideLoading();
-    }
-
-    private async Task DeleteSeriesClickHandler()
-    {
-        if ((selectedItems?.Count ?? 0) == 0)
-        {
-            await MessageBox.Info("Please select one or more series to delete.");
-            return;
-        }
-        bool confirm = await MessageBox.Ask($"Are you sure you want to delete {selectedItems.Count} series?");
-
-        if (confirm)
-        {
-            await MessageBox.ShowLoading();
-
-            foreach(FredSeries s in selectedItems)
-                await serviceClient.CallAsync(x => x.SeriesService.DeleteSeries(s.Symbol));
-
-            await GetSeriesCount();
+        if(await UpdateAllSeries())
             await seriesTable.ReloadServerData();
-            await MessageBox.HideLoading();
-        }
+    }
 
+    protected async Task UpdateSelectedSeriesClickHandler() 
+    {
+        IEnumerable<string>? selectedSymbols = selectedItems?.Select(x => x.Symbol);
+
+        if(await UpdateSelectedSeries(selectedSymbols))
+            await seriesTable.ReloadServerData();
+    }
+
+    protected async Task DeleteSeriesClickHandler()
+    {
+        IEnumerable<string>? selectedSymbols = selectedItems?.Select(x => x.Symbol);
+
+        if(await DeleteSeries(selectedSymbols))
+            await seriesTable.ReloadServerData();
     }
 
     private async Task<TableData<FredSeries>> LoadSeries(TableState tableState)
     {
         await MessageBox.ShowLoading();
-        IEnumerable<FredSeries> series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(0, int.MaxValue, searchTitle))).Item;
-
-        if (tableState.SortDirection != SortDirection.Descending)
-        {
-            series = tableState.SortLabel switch
-            {
-                nameof(FredSeries.Title) => series.OrderBy(x => x.Title),
-                nameof(FredSeries.Frequency) => series.OrderBy(x => x.Frequency),
-                nameof(FredSeries.Units) => series.OrderBy(x => x.Units),
-                nameof(FredSeries.SeasonalAdj) => series.OrderBy(x => x.SeasonalAdj),
-                _ => series.OrderBy(x => x.Symbol)
-            };
-        }
-        else
-        {
-            series = tableState.SortLabel switch
-            {
-                nameof(FredSeries.Title) => series.OrderByDescending(x => x.Title),
-                nameof(FredSeries.Frequency) => series.OrderByDescending(x => x.Frequency),
-                nameof(FredSeries.Units) => series.OrderByDescending(x => x.Units),
-                nameof(FredSeries.SeasonalAdj) => series.OrderByDescending(x => x.SeasonalAdj),
-                _ => series.OrderByDescending(x => x.Symbol)
-            };
-        }
-        series = series.Skip(tableState.Page * tableState.PageSize).Take(tableState.PageSize);
+        ViewState viewState = AppState.GetViewState(View.Series);
+        viewState.SortExpression = tableState.SortLabel;
+        viewState.SortAscending = tableState.SortDirection != SortDirection.Descending;
+        viewState.Skip = tableState.Page * tableState.PageSize;
+        viewState.Take = tableState.PageSize;
+        viewState.SearchText = searchTitle;
+        IEnumerable<FredSeries> series = await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(null, searchTitle, viewState.SortExpression, viewState.SortAscending, viewState.Skip, viewState.Take));
         await MessageBox.HideLoading();
-        return new TableData<FredSeries> { TotalItems = seriesCount, Items = series };
+        return new TableData<FredSeries> { TotalItems = int.MaxValue, Items = series };
     }
 
     private void OnSearch(string text)
     {
         searchTitle = text;
         seriesTable.ReloadServerData();
-    }
-    private async Task GetSeriesCount() => seriesCount = await serviceClient.CallAsync(x => x.SeriesService.GetSeriesCount());
-
-    private async Task ToolsClick()
-    {
-        await MessageBox.Info("test");
     }
 }

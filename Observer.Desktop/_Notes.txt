@@ -11,5 +11,49 @@ Implement Series Properties page showing all series metadata
 
 Create batch download for categories with option to include series and option for related categories.
 Create batch download for sources and releases with option to include series.
- 
 
+
+2024-02-23 - Implement views
+
+Series View
+Category View
+Release view
+	Click on Series to see same screen as now - Problem: does back go to series view or category view or release view
+		
+	
+
+-- Series View ---
+
+	Series view top menu:
+		
+		Add Series (get categories, category tags, related categories, releases, release dates, series tags, observations)
+		Update all series 
+		Update selected series
+		Delete selected series
+
+
+--- Category View ---
+
+
+
+	Category view top menu:
+		Update category children (get series, series tags, releases, release dates, related categories, category tags, get category tree (recurse children))
+		Update all series in category
+		Update selected series
+		
+
+
+--- Release View ---
+
+	Release view top menu:
+		Add Release (get dates, series, tags, sources )
+		Update all series in release
+		Update selected series
+		Delete selected series
+		View Dates
+		View Sources
+
+
+Add tooltips
+Download observations when symbol is clicked
+Fix screen flash

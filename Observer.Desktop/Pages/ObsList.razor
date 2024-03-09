@@ -1,7 +1,6 @@
 ﻿@inherits BasePage
 
-<div style="height:calc(100vh - 350px); display:grid; grid-template-rows: minmax(0,1fr)">
-    <MudTable ServerData="@(new Func<TableState, Task<TableData<FredObservation>>>(LoadObservations))" @ref="obsTable" Dense="true" Hover="true" FixedHeader="true" Height="100%" RowsPerPage="100">
+<MudTable ServerData="@(new Func<TableState, Task<TableData<FredObservation>>>(LoadObservations))" @ref="obsTable" Dense="true" Hover="true" FixedHeader="true" Height="calc(100vh - 350px)" RowsPerPage="100">
     <HeaderContent>
             <MudTh><MudTableSortLabel SortLabel="@(nameof(FredObservation.ObsDate))" T="FredObservation">Obs Date</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortLabel="@(nameof(FredObservation.VintageDate))" T="FredObservation">Vintage Date</MudTableSortLabel></MudTh>
@@ -16,7 +15,6 @@
         <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right"  />
     </PagerContent>
 </MudTable>
-</div>
 @code {
 
     [Parameter] public FredSeries series { get; set; }

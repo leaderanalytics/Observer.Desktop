@@ -1,0 +1,149 @@
+﻿@inherits BasePage
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex flex-column" style="width:600px">
+            @if (SymbolDisplayOption != "Hidden")
+            {
+                <MudTextField T="string" @ref="symbolField" @bind-Value="symbols" Label="Symbols" Disabled="@(SymbolDisplayOption == "Disabled")" HelperText="Enter a comma delimited list of symobls (e.g. NROU, CPI, GNPCA)" Variant="Variant.Filled" />
+            }
+            <div class="d-flex flex-row">
+                <MudContainer Class="d-flex flex-column">
+                    
+
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Observations" @bind-Value="args.Observations"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download observations for each selected series.  Vintage dates are automatically downloaded when observations are downloaded.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Series Tags" @bind-Value="args.SeriesTags"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download tags for each series.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Releases" @bind-Value="args.Releases"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download the release for each series.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Release Dates" @bind-Value="args.ReleaseDates" Disabled="@(! args.Releases)"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download release dates for each release.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Sources" @bind-Value="args.Sources" Disabled="@(! args.Releases)"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download sources for each release.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+                </MudContainer>
+                <MudContainer Class="d-flex flex-column">
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Series Categories" @bind-Value="args.SeriesCategories"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download the category or categories a series belongs to.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Child Categories" @bind-Value="args.ChildCategories" Disabled="@(! args.SeriesCategories)"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download child categories for each category a series belongs to.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Related Categories (slow)" @bind-Value="args.RelatedCategories" Disabled="@(! args.SeriesCategories)"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download related categories for each category.  Many calls to the FRED API are required to download relatively few related categories so using this option is not recccomended.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+
+                    
+                    <MudTooltip>
+                        <ChildContent>
+                            <MudCheckBox Label="Category Tags" @bind-Value="args.CategoryTags" Disabled="@(! args.SeriesCategories)"></MudCheckBox>
+                        </ChildContent>
+                        <TooltipContent>
+                            <MudText>Download tags for each category.</MudText>
+                        </TooltipContent>
+                    </MudTooltip>
+                </MudContainer>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions >
+        <MudButton OnClick="OkClickHandler" Disabled="@(string.IsNullOrEmpty(symbols) && string.IsNullOrEmpty(SymbolDisplayOption))" >OK</MudButton>
+        <MudButton OnClick="CancelClickHandler">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code 
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string SymbolDisplayOption { get; set; }     // Hidden or Disabled or null = display and editable
+    [Parameter] public string symbols { get; set; }                 // comma delimited list of selected series symbols
+    private MudTextField<string> symbolField { get; set; }
+    private FredDownloadArgs args { get; set; } = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if(symbolField is not null)
+            await symbolField.FocusAsync();
+    }
+
+    public async Task OkClickHandler()
+    {
+        if (string.IsNullOrEmpty(symbols))
+        {
+            await MessageBox.Error("Enter one more symbols seperated by a comma.");
+            return;
+        }
+        args.Symbols = symbols.Split(',', StringSplitOptions.TrimEntries);
+        MudDialog.Close(DialogResult.Ok(args)); 
+    }
+
+    public async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+            await OkClickHandler();
+    }
+
+    public void CancelClickHandler()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+}

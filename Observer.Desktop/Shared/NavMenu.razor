@@ -1,16 +1,14 @@
-﻿<MudNavMenu>
-        <MudNavLink class="nav-link" href="seriesViewer">
-            <span class="oi"><MudIcon Icon="@Icons.Filled.GridOn" Size="Size.Medium" /></span> Series &amp; Observations
-        </MudNavLink>
-
-        <MudNavLink class="nav-link" href="databaseMaintenance">
-            <span class="oi"><MudIcon Icon="@Icons.Filled.Save" Size="Size.Medium" /></span> Database
-        </MudNavLink>
+﻿@inherits BasePage
+<MudNavMenu >
+    <MudNavLink class="nav-link" Href="/SeriesViewer" Icon="@Icons.Material.Filled.Ballot">Series View</MudNavLink>
+    <MudNavLink class="nav-link" OnClick="NavigateToBreadCrumb" Icon="@Icons.Material.Filled.Folder">Category View</MudNavLink>
+    <MudNavLink class="nav-link" Href="/DatabaseMaintenance" Icon="@Icons.Material.Filled.Save">Database Maintenance</MudNavLink>
+    <MudNavLink class="nav-link" Href="/AboutObserver" Icon="@Icons.Material.Filled.QuestionMark">About Observer</MudNavLink>
 </MudNavMenu>
 
     
 @code {
-    [Inject] NavigationManager NavigationManager { get; set; }
+
     private ActiveMenu _ActiveMenu;
     protected ActiveMenu ActiveMenu 
     {
@@ -20,7 +18,7 @@
             if(_ActiveMenu != value)
             {
                 _ActiveMenu = value;
-                StateHasChanged();
+                //StateHasChanged();
             }
         }
     }
@@ -28,7 +26,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        NavigationManager.LocationChanged += LocationChanged;
+        // NavigationManager.LocationChanged += LocationChanged;
     }
 
     private void LocationChanged(object sender, LocationChangedEventArgs e)
@@ -44,5 +42,12 @@
             "deleteDatabase" => ActiveMenu.Database,
             _ => ActiveMenu.Main
         };
+    }
+
+    private async Task NavigateToBreadCrumb()
+    {
+        ViewState v = AppState.GetViewState(View.Category);
+        LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node node = v.BreadCrumbs?.LastOrDefault();
+        NavigationManager.NavigateTo($"/CategoryViewer/{node?.EntityID ?? "0"}", true);
     }
 }
