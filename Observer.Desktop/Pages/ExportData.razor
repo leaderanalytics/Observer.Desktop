@@ -99,7 +99,6 @@
     [Parameter] public EventCallback<FredSeries> seriesChanged { get; set; }
     [Parameter] public IEnumerable<FredObservation> obs { get; set; }
     [Parameter] public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
-    [Inject] IJSRuntime js { get; set; }
     private FileExportArgs args { get; set; }
     private IEnumerable<DateTime> selectedVintageDates { get; set; }
     private List<DateTime> vintageDates { get; set; }
@@ -160,7 +159,7 @@
         await MessageBox.ShowLoading();
         await Task.Delay(10); // or spinner wont show
         AsyncResult<byte[]> fileContent = exporter.Export(args, vintages);
-        await js.InvokeVoidAsync("BlazorDownloadFile", fileName, fileContent.Result);
+        await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, fileContent.Result);
 
         // Save options as defaults
         AppState.UserSettings.ExportSettings.DataLayout = args.DataLayout;

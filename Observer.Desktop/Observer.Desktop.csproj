@@ -26,9 +26,11 @@
 		<PackageReference Include="LeaderAnalytics.LeaderPivot.Blazor" Version="3.0.4" />
 		<PackageReference Include="LeaderAnalytics.MessageBox.Blazor" Version="1.0.2" />
 		<PackageReference Include="LeaderAnalytics.Vyntix.FileExporters" Version="1.0.8" />
-		<PackageReference Include="MudBlazor" Version="6.16.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+		<PackageReference Include="MudBlazor" Version="6.17.0" />
 		<PackageReference Include="Photino.Blazor" Version="2.7.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Update="wwwroot\**">
@@ -44,5 +46,11 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Vyntix.Fred.Downloader\Vyntix.Fred.Downloader\Vyntix.Fred.Downloader.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="appsettings.production.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 </Project>

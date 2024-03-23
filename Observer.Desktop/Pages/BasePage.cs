@@ -1,4 +1,6 @@
-﻿namespace LeaderAnalytics.Observer.Desktop.Pages;
+﻿using Microsoft.JSInterop;
+
+namespace LeaderAnalytics.Observer.Desktop.Pages;
 
 public class BasePage : ComponentBase
 {
@@ -9,6 +11,7 @@ public class BasePage : ComponentBase
     [Inject] protected IContainer container { get; set; }
     [Inject] protected ISnackbar Snackbar { get; set; }
     [Inject] protected NavigationManager NavigationManager { get; set; }
+    [Inject] protected IJSRuntime JSRuntime { get; set; }
     protected IAdaptiveClient<IAPI_Manifest> serviceClient;
     internal AppState AppState;
     protected const string pagerFormat = "{first_item}-{last_item} of {all_items}";
@@ -19,5 +22,11 @@ public class BasePage : ComponentBase
         ILifetimeScope scope = container.BeginLifetimeScope();
         serviceClient = scope.Resolve<IAdaptiveClient<IAPI_Manifest>>();
         AppState = scope.Resolve<AppState>();
+    }
+
+
+    protected async Task CopyToClipboard(string text)
+    {
+        await JSRuntime.InvokeVoidAsync("copyToClipboard", text);
     }
 }

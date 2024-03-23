@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
 using LeaderAnalytics.Vyntix.Fred.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 namespace LeaderAnalytics.Observer.Desktop.Pages;
 public class SeriesViewBasePage : BasePage
 {
+    protected ILogger<SeriesViewBasePage> logger { get; set; }
 
     protected async Task<bool> AddSeries() => await ShowDialog("Enter symbols and select related data objects to download", new DialogParameters<SeriesPathDownloadDialog>());
 
@@ -46,7 +48,9 @@ public class SeriesViewBasePage : BasePage
         if (!result.Cancelled)
         {
             FredDownloadArgs args = result.Data as FredDownloadArgs;
+            logger.LogInformation("Series path download started.  Args are: {@args}", args);
             await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+            logger.LogInformation("Series path download completed.");
         }
         return !result.Cancelled;
     }
@@ -63,6 +67,7 @@ public class SeriesViewBasePage : BasePage
         if (confirm)
         {
             await MessageBox.ShowLoading();
+            logger.LogInformation("Symbols deleted from database : {@symbols}", selectedItems);
 
             foreach (string s in selectedItems)
                 await serviceClient.CallAsync(x => x.SeriesService.DeleteSeries(s));

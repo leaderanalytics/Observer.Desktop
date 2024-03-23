@@ -16,7 +16,7 @@
     <MudIconButton Title="Download Series, Observations and related data" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="DownloadClickHandler" Class="d-flex"></MudIconButton>
 </MudPaper>
 <MudTable ServerData="@(new Func<TableState, Task<TableData<Downloader.Node>>>(LoadNodes))"
-          AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="false"  @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="100">
+          AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="false" @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="viewState.Take" CurrentPage="viewState.Page">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Series Categories</MudText>
         <MudSpacer />
@@ -24,7 +24,7 @@
     </ToolBarContent>
     <HeaderContent>
         <MudTh></MudTh>
-        <MudTh><MudTableSortLabel SortLabel="@(nameof(Downloader.Node.EntityName))" T="Downloader.Node">Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(Downloader.Node.EntityName))" InitialDirection="(viewState.SortExpression == nameof(Downloader.Node.EntityName) || string.IsNullOrEmpty(viewState.SortExpression))? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="Downloader.Node">Name</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Entity Type" Style="width:60px;">
@@ -47,6 +47,7 @@
             else
             {
                 <MudLink Href="@($"obsViewerTabs/{context.EntityID}/{context.EntityName}/C")">@context.SeriesName</MudLink>
+                <MudLink Class="ml-1" OnClick="(() => CopyToClipboard(context.EntityID))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
             }
             
         </MudTd>
@@ -56,25 +57,23 @@
     </PagerContent>
 </MudTable>
 
-
-
 @code {
     [Parameter] public string? parentID { get; set; } // "0" if root
     private MudTable<LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node> seriesTable;
     private string searchTitle;
+    private ViewState viewState;
+    [Inject] public ILogger<CategoryViewer> logger { get => base.logger as ILogger<CategoryViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        viewState = AppState.GetViewState(View.Category);
 
-        if (parentID == "0")
-        {
-            ViewState v = AppState.GetViewState(View.Category);
-
-            if (!v.BreadCrumbs.Any())
-                v.BreadCrumbs.Add(new Downloader.Node(new FredCategory { Name = "Root", NativeID = "0" }, "0"));
-        }
+        if (parentID == "0" && (!viewState.BreadCrumbs.Any()))
+            viewState.BreadCrumbs.Add(new Downloader.Node(new FredCategory { Name = "Root", NativeID = "0" }, "0"));
     }
+
+
 
     private async Task DownloadClickHandler()
     {
@@ -88,7 +87,10 @@
         {
             FredDownloadArgs args = result.Data as FredDownloadArgs;
             args.CategoryID = parentID;
+            
+            logger.LogInformation("Category path download started.  Args are: {@args}", args);
             await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+            logger.LogInformation("Category path download completed.");
         }
     }
 
@@ -101,30 +103,32 @@
     private async Task<TableData<LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node>> LoadNodes(TableState tableState)
     {
         await MessageBox.ShowLoading();
-        ViewState viewState = AppState.GetViewState(View.Series);
         viewState.SortExpression = tableState.SortLabel;
         viewState.SortAscending = tableState.SortDirection != SortDirection.Descending;
-        viewState.Skip = tableState.Page * tableState.PageSize;
+        viewState.Page = tableState.Page;
         viewState.Take = tableState.PageSize;
-        viewState.SearchText = searchTitle;
-        IEnumerable<Downloader.Node> series = await serviceClient.CallAsync(x => x.CategoriesService.GetCategoryNodes(parentID,viewState.SortAscending, viewState.SearchText, viewState.Skip, viewState.Take));
+        viewState.SearchTitle = searchTitle;
+        IEnumerable<Downloader.Node> series = await serviceClient.CallAsync(x => x.CategoriesService.GetCategoryNodes(parentID,viewState.SortAscending, viewState.SearchTitle, viewState.Skip, viewState.Take));
         await MessageBox.HideLoading();
         return new TableData<Downloader.Node> { TotalItems = int.MaxValue, Items = series };
     }
 
     private async Task PushBreadCrumb(LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node node)
     {
-        ViewState v = AppState.GetViewState(View.Category);
-        v.BreadCrumbs.Add(node);
-        NavigationManager.NavigateTo($"/CategoryViewer/{node.EntityID}", true);
+        viewState.BreadCrumbs.Add(node);
+        NavigationManager.NavigateTo($"/CategoryViewer/{node.EntityID}");
     }
+
+    protected override async Task OnParametersSetAsync() => seriesTable?.ReloadServerData();
+
+
 
     private async Task PopBreadCrumb(LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node node)
     {
-        ViewState v = AppState.GetViewState(View.Category);
-        LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node breadCrumb = v.BreadCrumbs.First(x => x.EntityType == "C" && x.EntityID == node.EntityID);
-        int index = v.BreadCrumbs.IndexOf(breadCrumb);
-        v.BreadCrumbs = v.BreadCrumbs.Take(index + 1).ToList();
-        NavigationManager.NavigateTo($"/CategoryViewer/{node.EntityID}", true);
+        LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node breadCrumb = viewState.BreadCrumbs.First(x => x.EntityType == "C" && x.EntityID == node.EntityID);
+        int index = viewState.BreadCrumbs.IndexOf(breadCrumb);
+        viewState.BreadCrumbs = viewState.BreadCrumbs.Take(index + 1).ToList();
+        viewState.Page = 0;
+        NavigationManager.NavigateTo($"/CategoryViewer/{node.EntityID}");
     }
 }

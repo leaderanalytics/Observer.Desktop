@@ -5,6 +5,8 @@ internal class UserSettings
 {
     public bool DarkTheme { get; set; }  // must be public or it wont serialize
     public ExportSettings ExportSettings { get; set; }
+    public FredDownloadArgs CategoryPathDownloadArgs { get; set; }
+    public FredDownloadArgs SeriesPathDownloadArgs { get; set; }
 }
 
 internal class ExportSettings

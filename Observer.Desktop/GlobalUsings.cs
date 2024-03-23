@@ -12,7 +12,7 @@ global using System.Threading;
 global using System.Threading.Tasks;
 global using Microsoft.Extensions.Configuration;
 global using System.IO;
-global using Serilog;
+global using Microsoft.Extensions.Logging;
 global using LeaderAnalytics.AdaptiveClient;
 // Add following for LeaderAnalytics.Vyntix.Fred.Downloader
 global using LeaderAnalytics.Vyntix.Fred.Downloader;

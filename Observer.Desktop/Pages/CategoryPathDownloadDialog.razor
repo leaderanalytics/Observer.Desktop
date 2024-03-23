@@ -1,4 +1,5 @@
 ﻿@inherits BasePage
+
 <MudDialog>
     <DialogContent>
         <div class="d-flex flex-row" style="width:600px">
@@ -8,7 +9,7 @@
                         <MudCheckBox Label="Series" @bind-Value="args.Series"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download series metadata for each category annd optionally each child category.</MudText>
+                        <MudText Class="tooltip">Download series metadata for each category annd optionally each child category.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -18,7 +19,7 @@
                         <MudCheckBox Label="Discontinued Series" @bind-Value="args.IncludeDiscontinuedSeries" Disabled="@(! args.Series)"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download series marked as Discontinued.</MudText>
+                        <MudText Class="tooltip">Download series marked as Discontinued.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -28,7 +29,7 @@
                         <MudCheckBox Label="Observations" @bind-Value="args.Observations"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download observations for each series in the category and optionally each child category.  Vintage dates are automatically downloaded when observations are downloaded.</MudText>
+                        <MudText Class="tooltip">Download observations for each series in the category and optionally each child category.  Vintage dates are automatically downloaded when observations are downloaded.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -38,7 +39,7 @@
                         <MudCheckBox Label="Series Tags" @bind-Value="args.SeriesTags"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download tags for each series.</MudText>
+                        <MudText Class="tooltip">Download tags for each series.</MudText>
                     </TooltipContent>
                 </MudTooltip>
                 
@@ -48,7 +49,7 @@
                         <MudCheckBox Label="Releases" @bind-Value="args.Releases"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download the release for each series.</MudText>
+                        <MudText Class="tooltip">Download the release for each series.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -58,7 +59,7 @@
                         <MudCheckBox Label="Release Dates" @bind-Value="args.ReleaseDates" Disabled="@(! args.Releases)"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download release dates for each release.</MudText>
+                        <MudText Class="tooltip">Download release dates for each release.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -68,7 +69,7 @@
                         <MudCheckBox Label="Sources" @bind-Value="args.Sources" Disabled="@(! args.Releases)"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download sources for each release.</MudText>
+                        <MudText Class="tooltip">Download sources for each release.</MudText>
                     </TooltipContent>
                 </MudTooltip>
             </MudContainer>
@@ -80,7 +81,7 @@
                         <MudCheckBox Label="Child Categories" @bind-Value="args.ChildCategories"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download child categories for the selected category.</MudText>
+                        <MudText Class="tooltip">Download child categories for the selected category.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -90,7 +91,7 @@
                         <MudCheckBox Label="Related Categories (slow)" @bind-Value="args.RelatedCategories"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download related categories for each category.  Many calls to the FRED API are required to download relatively few related categories so using this option is not recccomended.</MudText>
+                        <MudText Class="tooltip">Download related categories for each category.  Many calls to the FRED API are required to download relatively few related categories so using this option is not recccomended.</MudText>
                     </TooltipContent>
                 </MudTooltip>
                 
@@ -100,7 +101,7 @@
                         <MudCheckBox Label="Category Tags" @bind-Value="args.CategoryTags"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>Download tags for each category.</MudText>
+                        <MudText Class="tooltip">Download tags for each category.</MudText>
                     </TooltipContent>
                 </MudTooltip>
 
@@ -110,7 +111,7 @@
                         <MudCheckBox Label="Recurse Child Categories" @bind-Value="args.Recurse" Disabled="@(! args.ChildCategories)"></MudCheckBox>
                     </ChildContent>
                     <TooltipContent>
-                        <MudText>If selected, these download options will be applied to each child category and each series in those categories, recursively, down through the category hierarchy.  Use this option with care as downloads times can easily become quite long.</MudText>
+                        <MudText Class="tooltip">If selected, these download options will be applied to each child category and each series in those categories, recursively, down through the category hierarchy.  Use this option with care as downloads times can easily become quite long.</MudText>
                     </TooltipContent>
                 </MudTooltip>
             </MudContainer>
@@ -124,13 +125,24 @@
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-    private FredDownloadArgs args { get; set; } = new();
+    [Inject] protected IContainer container { get; set; }
+    private FredDownloadArgs args { get; set; }
+    private AppState appState;
 
-
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        appState = scope.Resolve<AppState>();
+        args = AppState.UserSettings.CategoryPathDownloadArgs ?? new FredDownloadArgs();
+    }
 
     public async Task OkClickHandler()
     {
-        MudDialog.Close(DialogResult.Ok(args)); // Control returns to the line after DialogService.Show(...)
+        // Save args to UserSettings
+        appState.UserSettings.CategoryPathDownloadArgs = args;
+        appState.SaveUserSettings();
+        MudDialog.Close(DialogResult.Ok(args)); 
     }
 
     public async Task Enter(KeyboardEventArgs e)
@@ -143,6 +155,4 @@
     {
         MudDialog.Close(DialogResult.Cancel());
     }
-
-    
 }

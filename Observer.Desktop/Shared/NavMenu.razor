@@ -1,5 +1,5 @@
 ﻿@inherits BasePage
-<MudNavMenu >
+<MudNavMenu>
     <MudNavLink class="nav-link" Href="/SeriesViewer" Icon="@Icons.Material.Filled.Ballot">Series View</MudNavLink>
     <MudNavLink class="nav-link" OnClick="NavigateToBreadCrumb" Icon="@Icons.Material.Filled.Folder">Category View</MudNavLink>
     <MudNavLink class="nav-link" Href="/DatabaseMaintenance" Icon="@Icons.Material.Filled.Save">Database Maintenance</MudNavLink>
@@ -8,6 +8,9 @@
 
     
 @code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
 
     private ActiveMenu _ActiveMenu;
     protected ActiveMenu ActiveMenu 
@@ -48,6 +51,7 @@
     {
         ViewState v = AppState.GetViewState(View.Category);
         LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node node = v.BreadCrumbs?.LastOrDefault();
-        NavigationManager.NavigateTo($"/CategoryViewer/{node?.EntityID ?? "0"}", true);
+        await OpenChanged.InvokeAsync(false);  // Close the drawer
+        NavigationManager.NavigateTo($"/CategoryViewer/{node?.EntityID ?? "0"}");
     }
 }

@@ -3,6 +3,10 @@ using Microsoft.Extensions.Logging;
 using Photino.Blazor;
 using Autofac.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using Serilog;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+
 
 //https://github.com/dotnet/docfx
 
@@ -15,7 +19,7 @@ class Program
     public static void Main(string[] args)
     {
         LeaderAnalytics.Core.EnvironmentName environmentName = LeaderAnalytics.Core.RuntimeEnvironment.GetEnvironmentName();
-        string logFolder = "logs"; // fallback location if we cannot read config
+        string logFolder = "logs/"; // fallback location if we cannot read config
         Exception startupEx = null;
         IConfigurationRoot appConfig = null;
         PhotinoBlazorApp app = null;
@@ -24,18 +28,16 @@ class Program
         try
         {
             appConfig = ConfigHelper.BuildConfig(environmentName).Result;
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(appConfig).CreateLogger();
         }
         catch (Exception ex)
         {
             startupEx = ex;
-        }
-        finally
-        {
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.File(logFolder, rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateLogger();
+              .WriteTo.File(logFolder, rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+              .Enrich.FromLogContext()
+              .WriteTo.Console()
+              .CreateLogger();
         }
 
         if (startupEx != null)
@@ -68,11 +70,10 @@ class Program
                 throw new Exception("Only one endPoint can be active at a time.  Check the EndPoints section in appsettings.json and make sure IsActive is set to True for one endPoint only.");
 
             containerBuilder.RegisterInstance(endPoints.First(x => x.IsActive)).SingleInstance();
-            builder.Services.AddLogging();
             builder.RootComponents.Add<App>("#app");
             FredClientConfig config = new FredClientConfig { MaxDownloadRetries = 3, ErrorDelay = 2000, MaxRequestsPerMinute = 60 };
             builder.Services.AddFredClient().UseAPIKey(apiKey).UseConfig(x => config);
-            builder.Services.AddLogging(x => x.AddConsole());
+            builder.Services.AddLogging(x => x.AddConsole().AddSerilog());
             builder.Services.AddMudServices();
             builder.Services.AddMessageBoxBlazor();
             builder.Services.AddLeaderPivot();
@@ -82,17 +83,23 @@ class Program
             builder.Services.AddSingleton(new MudThemeProvider());
             app = builder.Build();
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
+            Log.Information("App configuration was successful.");
         }
         catch(Exception ex)
         {
             Log.Fatal(ex.ToString());
+            Log.CloseAndFlush();
             return;
         }
 
         try
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, error) => HandleException(app, error.ExceptionObject as Exception);
+         //   AppDomain.CurrentDomain.UnhandledException += (sender, error) => HandleException(app, error.ExceptionObject as Exception);
+            Log.Information("Starting Observer Desktop.");
             app.Run();
+            Log.Information("Observer Desktop was shut down normally.");
+            Log.CloseAndFlush();
+
         }
         catch  (Exception ex)
         {
@@ -104,5 +111,7 @@ class Program
     {
         Log.Fatal(ex.ToString());
         app.MainWindow.ShowMessage("Fatal exception", ex.ToString());
+        Log.CloseAndFlush();
     }
 }
+

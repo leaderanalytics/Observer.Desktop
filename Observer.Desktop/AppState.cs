@@ -26,7 +26,7 @@ internal class AppState
 
         if (viewState is null)
         {
-            viewState = new ViewState { View = view };
+            viewState = new ViewState { View = view, Take = 500, SortAscending = true };
             ViewStates.Add(viewState);
         }
         return viewState;

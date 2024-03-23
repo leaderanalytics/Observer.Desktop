@@ -9,7 +9,9 @@
         </MudLink>
 
         <div class="d-flex flex-column justify-center align-center">
-            <h2>@symbol</h2>
+            <div class="d-flex flex-row">
+            <h4>@symbol</h4> <MudLink Class="ml-2" OnClick="(() => CopyToClipboard(symbol))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
+            </div>
             <h4>@title</h4>
         </div>
         <div class="d-flex justify-content-center align-content-center">
@@ -20,8 +22,11 @@
         </div>
     </MudPaper>
     <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" KeepPanelsAlive="false" >
-
-        <MudTabPanel Text="Properties" ToolTip="Series metadata">
+    @if (series is not null)
+    {
+        <MudTabPanel Text
+        ="Properties" ToolTip
+        ="Series metadata">
             <SeriesProperties @bind-series="series" />
         </MudTabPanel>
 
@@ -44,6 +49,7 @@
         <MudTabPanel Text="Export" ToolTip="Export data">
             <ExportData @bind-obs="obs" @bind-series="series" />
         </MudTabPanel>
+    }
     </MudTabs>
 
 
@@ -53,6 +59,7 @@
     [Parameter] public string title { get; set; }
     [Parameter] public string caller { get; set; }
     [Inject] IContainer container { get; set; }
+    
     private VintageComposerService composerService;
     private bool _showDenseObs;
     private bool showDenseObs
@@ -117,12 +124,34 @@
     {
         await base.OnInitializedAsync();
         composerService = container.Resolve<VintageComposerService>();
-        sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
-        await GetLocalSeries();
+
     }
 
-    private async Task GetLocalSeries()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
+        if(firstRender)
+            await UpdateObservations();
     }
+
+
+    private async Task UpdateObservations()
+    {
+        await MessageBox.ShowLoading();
+
+        series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
+
+        if (series.LastObsCheck < DateTime.Now.AddDays(-1))
+        {
+            await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol));
+
+            // Get the series again after calling DownloadObservations because HasVintages may change.
+            series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
+        }
+
+        sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
+        await MessageBox.HideLoading();
+        StateHasChanged();
+    }
+
+    
 }

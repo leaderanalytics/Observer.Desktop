@@ -1,51 +1,61 @@
 ﻿@page "/seriesViewer"
 @inherits SeriesViewBasePage
-<AddSeries />
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-end gap-8">
         <MudIconButton Title="Add Series" Size="Size.Large" Icon="@Icons.Material.Filled.Add" Variant="Variant.Filled" @onclick="AddSeriesClickHandler"  />
         <MudIconButton Title="Update all series" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex"></MudIconButton>
     <MudIconButton Title="Update selected series" Size="Size.Large" Icon="@Icons.Material.Filled.DownloadForOffline" Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex"></MudIconButton>
         <MudIconButton Title="Delete selected series" Size="Size.Large" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" ></MudIconButton>
     </MudPaper>
-    <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))"
-          AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="100">
+    <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))" 
+          AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="true" @bind-SelectedItems="selectedItems" @ref="seriesTable" 
+          FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="viewState.Take" CurrentPage="viewState.Page" Virtualize="false"  >
         <ToolBarContent>
             <MudText Typo="Typo.h6">Local Series</MudText>
             <MudSpacer />
-            <MudTextField T="string" ValueChanged="@OnSearch" Placeholder="Search" 
-                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudTextField T="string" Placeholder="Symbol Search" @bind-Value="searchSymbol" ></MudTextField>
+            <MudSpacer />
+            <MudTextField T="string" Placeholder="Title Search" @bind-Value="searchTitle"></MudTextField>
+            <MudSpacer />
+            <MudButton Title="Search symbol or series title"  IconSize="Size.Large" StartIcon="@Icons.Material.Filled.Search" Variant="Variant.Filled" @onclick="SearchClickHandler"  Style="height:42px;width:42px;"></MudButton>
+            <MudButton Title="Clear search criteria" Size="Size.Large" StartIcon="@Icons.Material.Filled.SearchOff" Variant="Variant.Filled" OnClick="ClearSearchClickHandler" Class="ml-2" Style="height:42px;width:42px;"></MudButton>
         </ToolBarContent>
         <HeaderContent>
-                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.Symbol))" T="FredSeries">Symbol</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.Title))" T="FredSeries">Title</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.Frequency))" T="FredSeries">Frequency</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.Units))" T="FredSeries">Units</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.SeasonalAdj))" T="FredSeries">Seasonal Adj</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="@(nameof(FredSeries.LastObsCheck))" T="FredSeries">Last Obs Check</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(FredSeries.Symbol))" InitialDirection="(viewState.SortExpression == nameof(FredSeries.Symbol) || string.IsNullOrEmpty(viewState.SortExpression))? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="FredSeries">Symbol</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(FredSeries.Title))" InitialDirection="viewState.SortExpression == nameof(FredSeries.Title) ? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="FredSeries">Title</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(FredSeries.Frequency))" InitialDirection="viewState.SortExpression == nameof(FredSeries.Frequency) ? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="FredSeries">Frequency</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(FredSeries.Units))" InitialDirection="viewState.SortExpression == nameof(FredSeries.Units) ? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="FredSeries">Units</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(FredSeries.SeasonalAdj))" InitialDirection="viewState.SortExpression == nameof(FredSeries.SeasonalAdj) ? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="FredSeries">Seasonal Adj</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortDirectionChanged="@((x) => seriesTable.CurrentPage = 0)" SortLabel="@(nameof(FredSeries.LastObsCheck))" InitialDirection="viewState.SortExpression == nameof(FredSeries.LastObsCheck) ? viewState.SortAscending ? SortDirection.Ascending : SortDirection.Descending : SortDirection.None" T="FredSeries">Last Obs Check</MudTableSortLabel></MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Symbol">
                 <MudLink href="@($"obsViewerTabs/{context.Symbol}/{context.Title}/S")">@context.Symbol</MudLink>
+                <MudLink Class="ml-1" OnClick="(() => CopyToClipboard(context.Symbol))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
             </MudTd>
             <MudTd DataLabel="Title">
                 <MudTooltip>
-                        <ChildContent>@context.Title</ChildContent>
+                        <ChildContent>
+                                @context.Title
+                        </ChildContent>
                     <TooltipContent>
                         <MudText>
-                            <div style="display:flex;width:70vw;padding-left:10vw;text-align:left;">
-                                    @context.Notes
-                            </div>
+                        <div style="display:flex;width:70vw;padding-left:5vw;text-align:left;">
+                            @{
+                                int l = Math.Min(context.Notes.Length, 1000);
+                                @context.Notes.Substring(0, l)@(l == 1000 ? "..." : String.Empty)
+                            }
+                        </div>
                         </MudText>
                     </TooltipContent>
                 </MudTooltip>
             </MudTd>
             <MudTd DataLabel="Frequency">@context.Frequency</MudTd>
-            <MudTd DataLabel="Units">@context.Units</MudTd>
+            <MudTd DataLabel="Units" Style="max-width:200px;" >@context.Units</MudTd>
             <MudTd DataLabel="Seasonal Adj">@context.SeasonalAdj</MudTd>
-            <MudTd DataLabel="Last Obs Check">@context.LastObsCheck.ToLocalTime()</MudTd>
+            <MudTd DataLabel="Last Obs Check">@context.LastObsCheck.ToLocalTime().ToString("yyyy-MM-dd hh:mm tt")</MudTd>
         </RowTemplate>
         <PagerContent>
-            <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")" HorizontalAlignment="HorizontalAlignment.Right" />
+            <MudTablePager PageSizeOptions="new int[] { 50, 100, 200, 500, int.MaxValue }" InfoFormat="@($"{pagerFormat}")"  HorizontalAlignment="HorizontalAlignment.Right" />
         </PagerContent>
     </MudTable>
 
@@ -53,12 +63,15 @@
 
     private MudTable<FredSeries> seriesTable;
     private string searchTitle;
+    private string searchSymbol;
     private HashSet<FredSeries> selectedItems { get; set; } = new HashSet<FredSeries>();
-
+    private ViewState viewState;
+    [Inject] public ILogger<SeriesViewer> logger { get => base.logger as ILogger<SeriesViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        viewState = AppState.GetViewState(View.Series);
     }
 
     protected async Task AddSeriesClickHandler()
@@ -92,20 +105,27 @@
     private async Task<TableData<FredSeries>> LoadSeries(TableState tableState)
     {
         await MessageBox.ShowLoading();
-        ViewState viewState = AppState.GetViewState(View.Series);
         viewState.SortExpression = tableState.SortLabel;
         viewState.SortAscending = tableState.SortDirection != SortDirection.Descending;
-        viewState.Skip = tableState.Page * tableState.PageSize;
+        viewState.Page = tableState.Page ;
         viewState.Take = tableState.PageSize;
-        viewState.SearchText = searchTitle;
-        IEnumerable<FredSeries> series = await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(null, searchTitle, viewState.SortExpression, viewState.SortAscending, viewState.Skip, viewState.Take));
+        viewState.SearchTitle = searchTitle;
+        viewState.SearchSymbol = searchSymbol;
+        IEnumerable<FredSeries> series = await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(viewState.SearchSymbol, viewState.SearchTitle, viewState.SortExpression, viewState.SortAscending, viewState.Skip, viewState.Take));
         await MessageBox.HideLoading();
         return new TableData<FredSeries> { TotalItems = int.MaxValue, Items = series };
     }
 
-    private void OnSearch(string text)
+    private void SearchClickHandler()
     {
-        searchTitle = text;
+        seriesTable.CurrentPage = 0;
+        seriesTable.ReloadServerData();
+    }
+
+    private void ClearSearchClickHandler()
+    {
+        searchTitle = searchSymbol = null;
+        seriesTable.CurrentPage = 0;
         seriesTable.ReloadServerData();
     }
 }

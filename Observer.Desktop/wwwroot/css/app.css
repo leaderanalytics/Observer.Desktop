@@ -107,3 +107,9 @@ a, .btn-link {
 .groupHeaderNoWrap {
     white-space: nowrap; /*Prevent dates from wrapping at the "-"*/
 }
+
+.tooltip {
+    max-width: 400px;
+    text-align: left;
+}
+

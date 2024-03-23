@@ -15,7 +15,7 @@
                             <MudCheckBox Label="Observations" @bind-Value="args.Observations"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download observations for each selected series.  Vintage dates are automatically downloaded when observations are downloaded.</MudText>
+                            <MudText Class="tooltip">Download observations for each selected series.  Vintage dates are automatically downloaded when observations are downloaded.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -25,7 +25,7 @@
                             <MudCheckBox Label="Series Tags" @bind-Value="args.SeriesTags"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download tags for each series.</MudText>
+                            <MudText Class="tooltip">Download tags for each series.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -35,7 +35,7 @@
                             <MudCheckBox Label="Releases" @bind-Value="args.Releases"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download the release for each series.</MudText>
+                            <MudText Class="tooltip">Download the release for each series.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -45,7 +45,7 @@
                             <MudCheckBox Label="Release Dates" @bind-Value="args.ReleaseDates" Disabled="@(! args.Releases)"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download release dates for each release.</MudText>
+                            <MudText Class="tooltip">Download release dates for each release.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -55,7 +55,7 @@
                             <MudCheckBox Label="Sources" @bind-Value="args.Sources" Disabled="@(! args.Releases)"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download sources for each release.</MudText>
+                            <MudText Class="tooltip">Download sources for each release.</MudText>
                         </TooltipContent>
                     </MudTooltip>
                 </MudContainer>
@@ -66,7 +66,7 @@
                             <MudCheckBox Label="Series Categories" @bind-Value="args.SeriesCategories"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download the category or categories a series belongs to.</MudText>
+                            <MudText Class="tooltip">Download the category or categories a series belongs to.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -76,7 +76,7 @@
                             <MudCheckBox Label="Child Categories" @bind-Value="args.ChildCategories" Disabled="@(! args.SeriesCategories)"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download child categories for each category a series belongs to.</MudText>
+                            <MudText Class="tooltip">Download child categories for each category a series belongs to.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -86,7 +86,7 @@
                             <MudCheckBox Label="Related Categories (slow)" @bind-Value="args.RelatedCategories" Disabled="@(! args.SeriesCategories)"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download related categories for each category.  Many calls to the FRED API are required to download relatively few related categories so using this option is not recccomended.</MudText>
+                            <MudText Class="tooltip">Download related categories for each category.  Many calls to the FRED API are required to download relatively few related categories so using this option is not recccomended.</MudText>
                         </TooltipContent>
                     </MudTooltip>
 
@@ -96,7 +96,7 @@
                             <MudCheckBox Label="Category Tags" @bind-Value="args.CategoryTags" Disabled="@(! args.SeriesCategories)"></MudCheckBox>
                         </ChildContent>
                         <TooltipContent>
-                            <MudText>Download tags for each category.</MudText>
+                            <MudText Class="tooltip">Download tags for each category.</MudText>
                         </TooltipContent>
                     </MudTooltip>
                 </MudContainer>
@@ -114,8 +114,18 @@
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public string SymbolDisplayOption { get; set; }     // Hidden or Disabled or null = display and editable
     [Parameter] public string symbols { get; set; }                 // comma delimited list of selected series symbols
+    [Inject] protected IContainer container { get; set; }
     private MudTextField<string> symbolField { get; set; }
-    private FredDownloadArgs args { get; set; } = new();
+    private FredDownloadArgs args { get; set; }
+    private AppState appState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        appState = scope.Resolve<AppState>();
+        args = AppState.UserSettings.SeriesPathDownloadArgs ?? new FredDownloadArgs();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -132,6 +142,12 @@
             await MessageBox.Error("Enter one more symbols seperated by a comma.");
             return;
         }
+
+        // don't persist symbols in UserSettings
+        args.Symbols = null;
+        // Save args to UserSettings
+        appState.UserSettings.SeriesPathDownloadArgs = args;
+        appState.SaveUserSettings();
         args.Symbols = symbols.Split(',', StringSplitOptions.TrimEntries);
         MudDialog.Close(DialogResult.Ok(args)); 
     }
