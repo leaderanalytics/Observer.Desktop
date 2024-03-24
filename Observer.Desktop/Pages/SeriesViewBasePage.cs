@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace LeaderAnalytics.Observer.Desktop.Pages;
 public class SeriesViewBasePage : BasePage
 {
+    [Inject] internal DownloadManager downloadManager { get; set; }
     protected ILogger<SeriesViewBasePage> logger { get; set; }
 
     protected async Task<bool> AddSeries() => await ShowDialog("Enter symbols and select related data objects to download", new DialogParameters<SeriesPathDownloadDialog>());
@@ -49,7 +50,8 @@ public class SeriesViewBasePage : BasePage
         {
             FredDownloadArgs args = result.Data as FredDownloadArgs;
             logger.LogInformation("Series path download started.  Args are: {@args}", args);
-            await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+            //await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+            downloadManager.QueueDownload(args);
             logger.LogInformation("Series path download completed.");
         }
         return !result.Cancelled;

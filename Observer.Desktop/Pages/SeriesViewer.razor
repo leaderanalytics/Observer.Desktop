@@ -67,6 +67,7 @@
     private HashSet<FredSeries> selectedItems { get; set; } = new HashSet<FredSeries>();
     private ViewState viewState;
     [Inject] public ILogger<SeriesViewer> logger { get => base.logger as ILogger<SeriesViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
+    
 
     protected override async Task OnInitializedAsync()
     {

@@ -15,6 +15,9 @@ namespace LeaderAnalytics.Observer.Desktop;
 
 class Program
 {
+    internal static TaskCompletionSource<bool> tcs = new();
+    internal static DownloadManager downloadManager;
+
     [STAThread]
     public static void Main(string[] args)
     {
@@ -23,8 +26,9 @@ class Program
         Exception startupEx = null;
         IConfigurationRoot appConfig = null;
         PhotinoBlazorApp app = null;
+
         // Configure logging
-        
+
         try
         {
             appConfig = ConfigHelper.BuildConfig(environmentName).Result;
@@ -77,12 +81,23 @@ class Program
             builder.Services.AddMudServices();
             builder.Services.AddMessageBoxBlazor();
             builder.Services.AddLeaderPivot();
+            builder.Services.AddSingleton(new MudThemeProvider());
+            builder.Services.AddSingleton<DownloadManager>(container =>
+            {
+                IContainer autofac = container.GetRequiredService<IContainer>();
+                ILifetimeScope scope = autofac.BeginLifetimeScope();
+                IAdaptiveClient<IAPI_Manifest> serviceClient = scope.Resolve<IAdaptiveClient<IAPI_Manifest>>();
+                ILogger<DownloadManager> logger = container.GetService<ILogger<DownloadManager>>();
+                return new DownloadManager(serviceClient, tcs, logger);
+            });
             containerBuilder.Populate(builder.Services);
             IContainer container = containerBuilder.Build();
             builder.Services.AddSingleton(typeof(IContainer), container);
-            builder.Services.AddSingleton(new MudThemeProvider());
             app = builder.Build();
+            downloadManager = app.Services.GetRequiredService<DownloadManager>();
+            Task.Run(downloadManager.StartQueueProcessing); // Fire and forget
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
+            app.MainWindow.RegisterWindowClosingHandler((x, y) => Task.Run(async () => await MainWindowClosing(x, y)).Result);
             Log.Information("App configuration was successful.");
         }
         catch(Exception ex)
@@ -94,7 +109,7 @@ class Program
 
         try
         {
-         //   AppDomain.CurrentDomain.UnhandledException += (sender, error) => HandleException(app, error.ExceptionObject as Exception);
+            //  AppDomain.CurrentDomain.UnhandledException += (sender, error) => HandleException(app, error.ExceptionObject as Exception);
             Log.Information("Starting Observer Desktop.");
             app.Run();
             Log.Information("Observer Desktop was shut down normally.");
@@ -112,6 +127,16 @@ class Program
         Log.Fatal(ex.ToString());
         app.MainWindow.ShowMessage("Fatal exception", ex.ToString());
         Log.CloseAndFlush();
+    }
+
+    private static async Task<bool> MainWindowClosing(object sender, EventArgs e)
+    {
+        Log.Debug("App shutdown has been requested.  Stopping DownloadManager");
+        downloadManager.StopProcessing();
+        Log.Debug("App shutdown has been requested.  Waiting for in-process download jobs to complete.");
+        await tcs.Task;
+        Log.Debug("App shutdown has been requested. All in-process download jobs have ended normally.  App will shut down.");
+        return false; // true prevents window from closing
     }
 }
 
