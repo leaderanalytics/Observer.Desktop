@@ -7,9 +7,17 @@
     <MudLayout>
         <MudAppBar>
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            <MudTooltip Text="Toggle light/dark theme">
+            <MudTooltip Text="Toggle light/dark theme.">
                 <MudIconButton Icon="@Icons.Material.Filled.Brightness4" Color="Color.Inherit" OnClick="@((e) => DarkMode())" />
             </MudTooltip>
+            
+            @if (IsDownloading)
+            {
+                <MudTooltip Text="One or more downloads are in progress.">
+                    <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Color="Color.Inherit" />
+                </MudTooltip>
+            }
+            
             <MudContainer Class="d-flex flex-grow-1 flex-row justify-end justify-content-end" Style="padding-right:0px;margin-right:-20px;" MaxWidth="MaxWidth.ExtraExtraLarge" >
                 <MudLink Href="https://www.vyntix.com" Target="_blank">
                     <MudImage Src="Vyntix_Logo.png" Class="mt-5" />
@@ -26,6 +34,9 @@
         </MudMainContent>
     </MudLayout>
 </CustomErrorBoundry>
+
+
+
 @code {
 
     private RenderFragment header;
@@ -48,7 +59,7 @@
 
         }
     }
-    
+
     private MudTheme _currentTheme = new();
     private readonly MudTheme _defaultTheme = new MudTheme
     {
@@ -82,12 +93,15 @@
             DrawerIcon = "rgba(255,255,255, 1)"
         }
     };
+    private bool IsDownloading { get; set; }
 
 
 
     [Inject] private NavigationManager NavigationManager { get; set; }
     [Inject] protected IContainer container { get; set; }
+    [Inject] private DownloadManager downloadManager { get; set; }
     internal AppState AppState;
+
     protected override void OnInitialized()
     {
         ILifetimeScope scope = container.BeginLifetimeScope();
@@ -97,10 +111,14 @@
         //if not home page, the navbar starts open
         if (!NavigationManager.IsHomePage())
         {
-          //  _drawerOpen = true;
+            //  _drawerOpen = true;
         }
+        downloadManager.IsDownloadingChanged += (s,e) =>
+        {
+            IsDownloading = e;
+            InvokeAsync(StateHasChanged);  // do not await
+        };
     }
-
     private void DrawerToggle() => _drawerOpen = !_drawerOpen;
 
     private void DarkMode() 

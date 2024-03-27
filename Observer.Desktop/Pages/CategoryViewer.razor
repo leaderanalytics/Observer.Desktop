@@ -63,6 +63,7 @@
     private string searchTitle;
     private ViewState viewState;
     [Inject] public ILogger<CategoryViewer> logger { get => base.logger as ILogger<CategoryViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
+    [Inject] internal DownloadManager downloadManager { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,9 +86,10 @@
         {
             FredDownloadArgs args = result.Data as FredDownloadArgs;
             args.CategoryID = parentID;
-            
+
             logger.LogInformation("Category path download started.  Args are: {@args}", args);
-            await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+            downloadManager.QueueDownload(args);
+            StateHasChanged();
             logger.LogInformation("Category path download completed.");
         }
     }

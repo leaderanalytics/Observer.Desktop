@@ -50,7 +50,6 @@ public class SeriesViewBasePage : BasePage
         {
             FredDownloadArgs args = result.Data as FredDownloadArgs;
             logger.LogInformation("Series path download started.  Args are: {@args}", args);
-            //await serviceClient.CallAsync(x => x.DownloadService.Download(args));
             downloadManager.QueueDownload(args);
             logger.LogInformation("Series path download completed.");
         }

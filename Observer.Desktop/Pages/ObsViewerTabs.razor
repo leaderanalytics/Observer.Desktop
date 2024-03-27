@@ -1,5 +1,6 @@
 ﻿@page "/obsViewerTabs/{symbol}/{title}/{caller}"
 @inherits BasePage
+@implements IDisposable
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-around align-center">
        
         <MudLink Href="@(callbackPage)">
@@ -59,7 +60,7 @@
     [Parameter] public string title { get; set; }
     [Parameter] public string caller { get; set; }
     [Inject] IContainer container { get; set; }
-    
+    [Inject] internal DownloadManager downloadManager { get; set; }
     private VintageComposerService composerService;
     private bool _showDenseObs;
     private bool showDenseObs
@@ -118,23 +119,25 @@
     public EventCallback<IEnumerable<FredObservation>> obsChanged { get; set; }
     private FredSeries series { get; set; }
     private string callbackPage => caller == "C" ? $"/CategoryViewer/{AppState.GetViewState(View.Category).BreadCrumbs.Last().EntityID}" : "/SeriesViewer";
-    private string callbackCaption => caller == "C" ? "Categories" : "Series"; 
+    private string callbackCaption => caller == "C" ? "Categories" : "Series";
+    private string downloadID;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         composerService = container.Resolve<VintageComposerService>();
+        downloadManager.DownloadCompleted += ObsDownloadCompleted;
 
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender)
-            await UpdateObservations();
+            await QueueDownloadJob();
     }
 
 
-    private async Task UpdateObservations()
+    private async Task QueueDownloadJob()
     {
         await MessageBox.ShowLoading();
 
@@ -142,16 +145,29 @@
 
         if (series.LastObsCheck < DateTime.Now.AddDays(-1))
         {
-            await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol));
-
-            // Get the series again after calling DownloadObservations because HasVintages may change.
-            series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
+            FredDownloadArgs args = new FredDownloadArgs { Symbols = [symbol], Observations = true };
+            downloadID = args.ID;
+            downloadManager.QueueDownload(args);
         }
-
-        sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
-        await MessageBox.HideLoading();
-        StateHasChanged();
     }
 
-    
+    private async void ObsDownloadCompleted(object sender, FredDownloadArgs args)
+    {
+        if (args.ID == downloadID)
+        {
+            await InvokeAsync(async () =>
+            {
+                sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
+                // Get the series again after calling DownloadObservations because HasVintages may change.
+                series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
+                await MessageBox.HideLoading();
+                StateHasChanged();
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        downloadManager.DownloadCompleted -= ObsDownloadCompleted;
+    }
 }

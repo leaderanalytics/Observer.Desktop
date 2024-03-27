@@ -54,6 +54,7 @@ Release view
 
 
 Show download status
+Move DownloadManager to Fred.Downloader
 Test multiple instances.
 
 Updating MudBlazor past version 6.17.0 causes this error when navitaging to CategoryView:
