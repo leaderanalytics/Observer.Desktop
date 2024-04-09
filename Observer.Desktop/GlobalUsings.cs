@@ -23,3 +23,4 @@ global using LeaderAnalytics.Vyntix.FileExporters;
 global using LeaderAnalytics.Vyntix.Model;
 global using LeaderAnalytics.MessageBox.Blazor;
 global using LeaderAnalytics.Core;
+global using System.Web;

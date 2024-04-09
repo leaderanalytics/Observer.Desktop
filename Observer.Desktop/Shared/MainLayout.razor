@@ -14,7 +14,7 @@
             @if (IsDownloading)
             {
                 <MudTooltip Text="One or more downloads are in progress.">
-                    <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Color="Color.Inherit" />
+                    <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Color="Color.Inherit" Class="mt-2" />
                 </MudTooltip>
             }
             
@@ -99,13 +99,14 @@
 
     [Inject] private NavigationManager NavigationManager { get; set; }
     [Inject] protected IContainer container { get; set; }
-    [Inject] private DownloadManager downloadManager { get; set; }
+    private DownloadManager downloadManager { get; set; }
     internal AppState AppState;
 
     protected override void OnInitialized()
     {
         ILifetimeScope scope = container.BeginLifetimeScope();
         AppState = scope.Resolve<AppState>();
+        downloadManager = scope.Resolve<DownloadManager>();
         _currentTheme = AppState.UserSettings.DarkTheme ? _darkTheme : _defaultTheme;
 
         //if not home page, the navbar starts open

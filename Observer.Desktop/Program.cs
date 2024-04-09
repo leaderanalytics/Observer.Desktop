@@ -37,15 +37,16 @@ class Program
         catch (Exception ex)
         {
             startupEx = ex;
-            Log.Logger = new LoggerConfiguration()
-              .WriteTo.File(logFolder, rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
-              .Enrich.FromLogContext()
-              .WriteTo.Console()
-              .CreateLogger();
         }
 
         if (startupEx != null)
         {
+            Log.Logger = new LoggerConfiguration()
+           .WriteTo.File(logFolder, rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+           .Enrich.FromLogContext()
+           .WriteTo.Console()
+           .CreateLogger();
+
             Log.Fatal("An exception occured during startup configuration.  Program execution will not continue.");
             Log.Fatal(startupEx.ToString());
             Log.CloseAndFlush();
@@ -74,6 +75,23 @@ class Program
                 throw new Exception("Only one endPoint can be active at a time.  Check the EndPoints section in appsettings.json and make sure IsActive is set to True for one endPoint only.");
 
             containerBuilder.RegisterInstance(endPoints.First(x => x.IsActive)).SingleInstance();
+
+            containerBuilder.Register<DownloadManager>((c, p) => 
+            {
+                IComponentContext cxt = c.Resolve<IComponentContext>();
+                IAdaptiveClient<IAPI_Manifest> serviceClient = cxt.Resolve<IAdaptiveClient<IAPI_Manifest>>();
+                ILogger<DownloadManager> logger = cxt.Resolve<ILogger<DownloadManager>>();
+                //Action<string> statusCallback = cxt.Resolve<Action<string>>();
+                return new DownloadManager(serviceClient, tcs, logger);
+            }).SingleInstance();
+
+            containerBuilder.Register<Action<string>>((c,p) =>
+            {
+                IComponentContext cxt = c.Resolve<IComponentContext>();
+                DownloadManager dm = cxt.Resolve<DownloadManager>();
+                return x => dm.OnDownloadStatusMessage(x); 
+            }).SingleInstance();
+
             builder.RootComponents.Add<App>("#app");
             FredClientConfig config = new FredClientConfig { MaxDownloadRetries = 3, ErrorDelay = 2000, MaxRequestsPerMinute = 60 };
             builder.Services.AddFredClient().UseAPIKey(apiKey).UseConfig(x => config);
@@ -82,20 +100,18 @@ class Program
             builder.Services.AddMessageBoxBlazor();
             builder.Services.AddLeaderPivot();
             builder.Services.AddSingleton(new MudThemeProvider());
-            builder.Services.AddSingleton<DownloadManager>(container =>
-            {
-                IContainer autofac = container.GetRequiredService<IContainer>();
-                ILifetimeScope scope = autofac.BeginLifetimeScope();
-                IAdaptiveClient<IAPI_Manifest> serviceClient = scope.Resolve<IAdaptiveClient<IAPI_Manifest>>();
-                ILogger<DownloadManager> logger = container.GetService<ILogger<DownloadManager>>();
-                return new DownloadManager(serviceClient, tcs, logger);
-            });
             containerBuilder.Populate(builder.Services);
             IContainer container = containerBuilder.Build();
             builder.Services.AddSingleton(typeof(IContainer), container);
             app = builder.Build();
-            downloadManager = app.Services.GetRequiredService<DownloadManager>();
-            Task.Run(downloadManager.StartQueueProcessing); // Fire and forget
+            
+
+            IContainer autofac = app.Services.GetRequiredService<IContainer>();
+            ILifetimeScope scope = autofac.BeginLifetimeScope();
+            downloadManager = scope.Resolve<DownloadManager>();
+
+            // Start polling the download queue 
+            Task.Run(downloadManager.StartQueueProcessing); 
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
             app.MainWindow.RegisterWindowClosingHandler((x, y) => Task.Run(async () => await MainWindowClosing(x, y)).Result);
             Log.Information("App configuration was successful.");

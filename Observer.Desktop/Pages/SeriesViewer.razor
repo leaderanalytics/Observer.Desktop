@@ -29,7 +29,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Symbol">
-                <MudLink href="@($"obsViewerTabs/{context.Symbol}/{context.Title}/S")">@context.Symbol</MudLink>
+                <MudLink href="@($"obsViewerTabs/{context.Symbol}/{HttpUtility.UrlEncode(context.Title)}/S")">@context.Symbol</MudLink>
                 <MudLink Class="ml-1" OnClick="(() => CopyToClipboard(context.Symbol))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
             </MudTd>
             <MudTd DataLabel="Title">

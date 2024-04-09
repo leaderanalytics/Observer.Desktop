@@ -46,7 +46,7 @@
             }
             else
             {
-                <MudLink Href="@($"obsViewerTabs/{context.EntityID}/{context.EntityName}/C")">@context.SeriesName</MudLink>
+                <MudLink Href="@($"obsViewerTabs/{context.EntityID}/{HttpUtility.UrlEncode(context.EntityName)}/C")">@context.SeriesName</MudLink>
                 <MudLink Class="ml-1" OnClick="(() => CopyToClipboard(context.EntityID))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
             }
             
@@ -63,7 +63,7 @@
     private string searchTitle;
     private ViewState viewState;
     [Inject] public ILogger<CategoryViewer> logger { get => base.logger as ILogger<CategoryViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
-    [Inject] internal DownloadManager downloadManager { get; set; }
+    internal DownloadManager downloadManager { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,6 +72,9 @@
 
         if (parentID == "0" && (!viewState.BreadCrumbs.Any()))
             viewState.BreadCrumbs.Add(new Downloader.Node(new FredCategory { Name = "Root", NativeID = "0" }, "0"));
+
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        downloadManager = scope.Resolve<DownloadManager>();
     }
 
     private async Task DownloadClickHandler()

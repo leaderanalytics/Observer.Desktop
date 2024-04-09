@@ -13,7 +13,7 @@
             <div class="d-flex flex-row">
             <h4>@symbol</h4> <MudLink Class="ml-2" OnClick="(() => CopyToClipboard(symbol))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
             </div>
-            <h4>@title</h4>
+            <h4>@HttpUtility.UrlDecode(title)</h4>
         </div>
         <div class="d-flex justify-content-center align-content-center">
             <MudRadioGroup @bind-SelectedOption="@showDenseObs" Class="d-flex justify-content-center align-content-center">
@@ -60,7 +60,7 @@
     [Parameter] public string title { get; set; }
     [Parameter] public string caller { get; set; }
     [Inject] IContainer container { get; set; }
-    [Inject] internal DownloadManager downloadManager { get; set; }
+    internal DownloadManager downloadManager { get; set; }
     private VintageComposerService composerService;
     private bool _showDenseObs;
     private bool showDenseObs
@@ -122,12 +122,15 @@
     private string callbackCaption => caller == "C" ? "Categories" : "Series";
     private string downloadID;
 
+
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        composerService = container.Resolve<VintageComposerService>();
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        composerService = scope.Resolve<VintageComposerService>();
+        downloadManager = scope.Resolve<DownloadManager>();
         downloadManager.DownloadCompleted += ObsDownloadCompleted;
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -149,21 +152,23 @@
             downloadID = args.ID;
             downloadManager.QueueDownload(args);
         }
+        else
+            await LoadLocalObservations();
     }
 
     private async void ObsDownloadCompleted(object sender, FredDownloadArgs args)
     {
         if (args.ID == downloadID)
-        {
-            await InvokeAsync(async () =>
-            {
-                sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
-                // Get the series again after calling DownloadObservations because HasVintages may change.
-                series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
-                await MessageBox.HideLoading();
-                StateHasChanged();
-            });
-        }
+            await InvokeAsync(async () => await LoadLocalObservations());
+    }
+
+    private async Task LoadLocalObservations()
+    {
+        sparseObs = (await serviceClient.CallAsync(x => x.ObservationsService.GetLocalObservations(new string[] { symbol }))).Item;
+        // Get the series again after calling DownloadObservations because HasVintages may change.
+        series = (await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(symbol))).FirstOrDefault();
+        await MessageBox.HideLoading();
+        StateHasChanged();
     }
 
     public void Dispose()

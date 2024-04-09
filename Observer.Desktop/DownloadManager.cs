@@ -10,6 +10,7 @@ namespace LeaderAnalytics.Observer.Desktop;
 
 internal class DownloadManager
 {
+    private const int MAX_MESSAGE_QUEUE_LEN = 200;
     private IAdaptiveClient<IAPI_Manifest> serviceClient;
     private BlockingCollection<FredDownloadArgs> queue;
     private TaskCompletionSource<bool> tcs;
@@ -24,16 +25,19 @@ internal class DownloadManager
             OnIsDownloadingChanged(value);
         }
     }
-    //[Parameter] public Func<bool,Task> IsDownloadingChanged { get; set; }
+    
     public event EventHandler<bool> IsDownloadingChanged;
     public event EventHandler<FredDownloadArgs> DownloadStarted;
     public event EventHandler<FredDownloadArgs> DownloadCompleted;
+    public event EventHandler<string> DownloadStatusMessage;
+    public Queue<string> Messages { get; set; } = new Queue<string>(MAX_MESSAGE_QUEUE_LEN);
 
-    internal DownloadManager(IAdaptiveClient<IAPI_Manifest>  client, TaskCompletionSource<bool> tcs, ILogger<DownloadManager> logger)
+    internal DownloadManager(IAdaptiveClient<IAPI_Manifest> serviceClient, TaskCompletionSource<bool> tcs, ILogger<DownloadManager> logger)
     {
-        this.serviceClient = client ?? throw new ArgumentNullException(nameof(client));
+        this.serviceClient = serviceClient;
         this.tcs = tcs ?? throw new ArgumentNullException(nameof(tcs));
         this.logger = logger;
+        
         queue = new BlockingCollection<FredDownloadArgs>();
     }
 
@@ -62,21 +66,31 @@ internal class DownloadManager
             if (!queue.TryTake(out FredDownloadArgs args, -1))
                 break;
 
-            logger.LogInformation("Download dequed and started.  Args are: {@args}", args);
-            IsDownloading = true;
+            DateTime startTime = DateTime.Now;
+            string startTimeString = startTime.ToString(Constants.DateTimeFormat);
             OnDownloadStarted(args);
+            IsDownloading = true;
+            Messages.Clear();
+            logger.LogInformation("=======================================================================================");
+            logger.LogInformation("Download dequed and started at {d}.  Args are: {@args}", startTimeString, args);
+            OnDownloadStatusMessage($"Download dequed and started at {startTimeString}.");
+            
 
             try
             {
-                await serviceClient.CallAsync(x => x.DownloadService.Download(args));
+                await serviceClient.CallAsync(x => x.DownloadService.Download(args, OnDownloadStatusMessage));
             }
             finally
             {
                 IsDownloading = false;
                 OnDownloadCompleted(args);
             }
-            
-            logger.LogInformation("Download completed.  Args are: {@args}", args);
+            DateTime endTime = DateTime.Now;
+            string endTimeString = endTime.ToString(Constants.DateTimeFormat);
+            string elapsed = endTime.Subtract(startTime).ToString("hh\\:mm\\:ss");
+            OnDownloadStatusMessage($"Download ended at {endTimeString}.  Elapsted time is {elapsed}.");
+            logger.LogInformation("Download completed at {d}. Elapsed time is {e}.  Args are: {@args}", endTimeString, elapsed, args);
+            logger.LogInformation("=======================================================================================");
         }
         logger.LogDebug("StartQueueProcessing has ended normally.");
         tcs.SetResult(true);
@@ -86,4 +100,13 @@ internal class DownloadManager
     private void OnDownloadStarted(FredDownloadArgs e) => DownloadStarted?.Invoke(this, e);
     private void OnDownloadCompleted(FredDownloadArgs e) => DownloadCompleted?.Invoke(this, e);
     
+    public void OnDownloadStatusMessage(string msg)
+    {
+        Messages.Enqueue(msg);
+        
+        if(Messages.Count > MAX_MESSAGE_QUEUE_LEN)
+            Messages.Dequeue();
+
+        DownloadStatusMessage?.Invoke(this, msg);
+    }
 }

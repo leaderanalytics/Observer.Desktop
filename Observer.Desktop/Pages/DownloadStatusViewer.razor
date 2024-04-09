@@ -1,0 +1,35 @@
+﻿@page "/DownloadStatusViewer"
+@inherits BasePage
+@implements IDisposable
+<h3 class="ma-10">Download Status</h3>
+<MudPaper Class="ma-10 pa-10">
+    <MudGrid Class="flex-column">
+        @foreach(string msg in downloadManager.Messages)
+        {
+            <div>@msg</div>
+        }
+    </MudGrid>
+</MudPaper>
+
+@code {
+
+    internal DownloadManager downloadManager { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        downloadManager = scope.Resolve<DownloadManager>();
+        downloadManager.DownloadStatusMessage += DisplayMessage;
+    }
+
+    private void DisplayMessage(object sender, string message)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        downloadManager.DownloadStatusMessage -= DisplayMessage;
+    }
+}

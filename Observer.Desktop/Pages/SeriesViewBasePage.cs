@@ -10,8 +10,15 @@ using System.Threading.Tasks;
 namespace LeaderAnalytics.Observer.Desktop.Pages;
 public class SeriesViewBasePage : BasePage
 {
-    [Inject] internal DownloadManager downloadManager { get; set; }
+    internal DownloadManager downloadManager { get; set; }
     protected ILogger<SeriesViewBasePage> logger { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ILifetimeScope scope = container.BeginLifetimeScope();
+        downloadManager = scope.Resolve<DownloadManager>();
+    }
 
     protected async Task<bool> AddSeries() => await ShowDialog("Enter symbols and select related data objects to download", new DialogParameters<SeriesPathDownloadDialog>());
 
