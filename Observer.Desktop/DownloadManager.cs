@@ -15,6 +15,8 @@ internal class DownloadManager
     private BlockingCollection<FredDownloadArgs> queue;
     private TaskCompletionSource<bool> tcs;
     private readonly ILogger<DownloadManager> logger;
+    private CancellationToken CancellationToken;
+    private CancellationTokenSource CancellationTokenSource;
     private bool _IsDownloading;
     internal bool IsDownloading 
     {
@@ -74,11 +76,12 @@ internal class DownloadManager
             logger.LogInformation("=======================================================================================");
             logger.LogInformation("Download dequed and started at {d}.  Args are: {@args}", startTimeString, args);
             OnDownloadStatusMessage($"Download dequed and started at {startTimeString}.");
-            
+            CancellationTokenSource = new();
+            CancellationToken = CancellationTokenSource.Token;
 
             try
             {
-                await serviceClient.CallAsync(x => x.DownloadService.Download(args, OnDownloadStatusMessage));
+                await serviceClient.CallAsync(x => x.DownloadService.Download(args, CancellationToken));
             }
             finally
             {
@@ -94,6 +97,15 @@ internal class DownloadManager
         }
         logger.LogDebug("StartQueueProcessing has ended normally.");
         tcs.SetResult(true);
+    }
+
+    internal void CancelAllDownloads()
+    {
+        if (!(CancellationTokenSource?.IsCancellationRequested ?? true))
+        {
+            CancellationTokenSource?.Cancel();
+            logger.LogDebug("Cancellation was requested.");
+        }
     }
 
     private void OnIsDownloadingChanged(bool e) => IsDownloadingChanged?.Invoke(this, e);

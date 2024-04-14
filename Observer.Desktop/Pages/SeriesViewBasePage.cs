@@ -93,7 +93,7 @@ public class SeriesViewBasePage : BasePage
         foreach (string symbol in symbols)
         {
             Snackbar.Add($"Updating series {symbol}...", Severity.Info);
-            LeaderAnalytics.Vyntix.Elements.RowOpResult result = await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol));
+            LeaderAnalytics.Vyntix.Elements.RowOpResult result = await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol, null));
 
             if (result.Success)
                 Snackbar.Add($"Series {symbol} was updated successfully.", Severity.Success);

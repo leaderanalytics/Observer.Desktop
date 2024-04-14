@@ -81,7 +81,6 @@ class Program
                 IComponentContext cxt = c.Resolve<IComponentContext>();
                 IAdaptiveClient<IAPI_Manifest> serviceClient = cxt.Resolve<IAdaptiveClient<IAPI_Manifest>>();
                 ILogger<DownloadManager> logger = cxt.Resolve<ILogger<DownloadManager>>();
-                //Action<string> statusCallback = cxt.Resolve<Action<string>>();
                 return new DownloadManager(serviceClient, tcs, logger);
             }).SingleInstance();
 

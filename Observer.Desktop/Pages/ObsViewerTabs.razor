@@ -148,9 +148,12 @@
 
         if (series.LastObsCheck < DateTime.Now.AddDays(-1))
         {
-            FredDownloadArgs args = new FredDownloadArgs { Symbols = [symbol], Observations = true };
-            downloadID = args.ID;
-            downloadManager.QueueDownload(args);
+            //FredDownloadArgs args = new FredDownloadArgs { Symbols = [symbol], Observations = true };
+            //downloadID = args.ID;
+            //downloadManager.QueueDownload(args);
+
+            await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol, null));
+            await LoadLocalObservations();
         }
         else
             await LoadLocalObservations();
