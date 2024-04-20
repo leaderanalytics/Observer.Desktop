@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 namespace LeaderAnalytics.Observer.Desktop.Pages;
 public class SeriesViewBasePage : BasePage
 {
-    internal DownloadManager downloadManager { get; set; }
+    internal DownloadQueueManager downloadQueueManager { get; set; }
     protected ILogger<SeriesViewBasePage> logger { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         ILifetimeScope scope = container.BeginLifetimeScope();
-        downloadManager = scope.Resolve<DownloadManager>();
+        downloadQueueManager = scope.Resolve<DownloadQueueManager>();
     }
 
     protected async Task<bool> AddSeries() => await ShowDialog("Enter symbols and select related data objects to download", new DialogParameters<SeriesPathDownloadDialog>());
@@ -57,7 +57,7 @@ public class SeriesViewBasePage : BasePage
         {
             FredDownloadArgs args = result.Data as FredDownloadArgs;
             logger.LogInformation("Series path download started.  Args are: {@args}", args);
-            downloadManager.QueueDownload(args);
+            downloadQueueManager.QueueDownload(args);
             logger.LogInformation("Series path download completed.");
         }
         return !result.Cancelled;

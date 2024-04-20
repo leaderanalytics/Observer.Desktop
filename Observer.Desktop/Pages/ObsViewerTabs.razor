@@ -60,7 +60,7 @@
     [Parameter] public string title { get; set; }
     [Parameter] public string caller { get; set; }
     [Inject] IContainer container { get; set; }
-    internal DownloadManager downloadManager { get; set; }
+    internal DownloadQueueManager downloadQueueManager { get; set; }
     private VintageComposerService composerService;
     private bool _showDenseObs;
     private bool showDenseObs
@@ -129,8 +129,8 @@
         await base.OnInitializedAsync();
         ILifetimeScope scope = container.BeginLifetimeScope();
         composerService = scope.Resolve<VintageComposerService>();
-        downloadManager = scope.Resolve<DownloadManager>();
-        downloadManager.DownloadCompleted += ObsDownloadCompleted;
+        downloadQueueManager = scope.Resolve<DownloadQueueManager>();
+        downloadQueueManager.DownloadCompleted += ObsDownloadCompleted;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -150,7 +150,7 @@
         {
             //FredDownloadArgs args = new FredDownloadArgs { Symbols = [symbol], Observations = true };
             //downloadID = args.ID;
-            //downloadManager.QueueDownload(args);
+            //downloadQueueManager.QueueDownload(args);
 
             await serviceClient.CallAsync(x => x.ObservationsService.DownloadObservations(symbol, null));
             await LoadLocalObservations();
@@ -176,6 +176,6 @@
 
     public void Dispose()
     {
-        downloadManager.DownloadCompleted -= ObsDownloadCompleted;
+        downloadQueueManager.DownloadCompleted -= ObsDownloadCompleted;
     }
 }

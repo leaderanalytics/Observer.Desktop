@@ -16,7 +16,7 @@ namespace LeaderAnalytics.Observer.Desktop;
 class Program
 {
     internal static TaskCompletionSource<bool> tcs = new();
-    internal static DownloadManager downloadManager;
+    internal static DownloadQueueManager downloadQueueManager;
 
     [STAThread]
     public static void Main(string[] args)
@@ -76,18 +76,18 @@ class Program
 
             containerBuilder.RegisterInstance(endPoints.First(x => x.IsActive)).SingleInstance();
 
-            containerBuilder.Register<DownloadManager>((c, p) => 
+            containerBuilder.Register<DownloadQueueManager>((c, p) => 
             {
                 IComponentContext cxt = c.Resolve<IComponentContext>();
                 IAdaptiveClient<IAPI_Manifest> serviceClient = cxt.Resolve<IAdaptiveClient<IAPI_Manifest>>();
-                ILogger<DownloadManager> logger = cxt.Resolve<ILogger<DownloadManager>>();
-                return new DownloadManager(serviceClient, tcs, logger);
+                ILogger<DownloadQueueManager> logger = cxt.Resolve<ILogger<DownloadQueueManager>>();
+                return new DownloadQueueManager(serviceClient, tcs, logger);
             }).SingleInstance();
 
             containerBuilder.Register<Action<string>>((c,p) =>
             {
                 IComponentContext cxt = c.Resolve<IComponentContext>();
-                DownloadManager dm = cxt.Resolve<DownloadManager>();
+                DownloadQueueManager dm = cxt.Resolve<DownloadQueueManager>();
                 return x => dm.OnDownloadStatusMessage(x); 
             }).SingleInstance();
 
@@ -107,10 +107,10 @@ class Program
 
             IContainer autofac = app.Services.GetRequiredService<IContainer>();
             ILifetimeScope scope = autofac.BeginLifetimeScope();
-            downloadManager = scope.Resolve<DownloadManager>();
+            downloadQueueManager = scope.Resolve<DownloadQueueManager>();
 
             // Start polling the download queue 
-            Task.Run(downloadManager.StartQueueProcessing); 
+            Task.Run(downloadQueueManager.StartQueueProcessing); 
             app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
             app.MainWindow.RegisterWindowClosingHandler((x, y) => Task.Run(async () => await MainWindowClosing(x, y)).Result);
             Log.Information("App configuration was successful.");
@@ -146,8 +146,8 @@ class Program
 
     private static async Task<bool> MainWindowClosing(object sender, EventArgs e)
     {
-        Log.Debug("App shutdown has been requested.  Stopping DownloadManager");
-        downloadManager.ShutDown();
+        Log.Debug("App shutdown has been requested.  Stopping DownloadQueueManager");
+        downloadQueueManager.ShutDown();
         Log.Debug("App shutdown has been requested.  Waiting for in-process download jobs to complete.");
         await tcs.Task;
         Log.Debug("App shutdown has been requested. All in-process download jobs have ended normally.  App will shut down.");

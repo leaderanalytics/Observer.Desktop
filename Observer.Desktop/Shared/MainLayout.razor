@@ -99,14 +99,14 @@
 
     [Inject] private NavigationManager NavigationManager { get; set; }
     [Inject] protected IContainer container { get; set; }
-    private DownloadManager downloadManager { get; set; }
+    private DownloadQueueManager downloadQueueManager { get; set; }
     internal AppState AppState;
 
     protected override void OnInitialized()
     {
         ILifetimeScope scope = container.BeginLifetimeScope();
         AppState = scope.Resolve<AppState>();
-        downloadManager = scope.Resolve<DownloadManager>();
+        downloadQueueManager = scope.Resolve<DownloadQueueManager>();
         _currentTheme = AppState.UserSettings.DarkTheme ? _darkTheme : _defaultTheme;
 
         //if not home page, the navbar starts open
@@ -114,7 +114,7 @@
         {
             //  _drawerOpen = true;
         }
-        downloadManager.IsDownloadingChanged += (s,e) =>
+        downloadQueueManager.IsDownloadingChanged += (s,e) =>
         {
             IsDownloading = e;
             InvokeAsync(StateHasChanged);  // do not await

@@ -69,7 +69,7 @@
     private string searchTitle;
     private ViewState viewState;
     [Inject] public ILogger<CategoryViewer> logger { get => base.logger as ILogger<CategoryViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
-    internal DownloadManager downloadManager { get; set; }
+    internal DownloadQueueManager downloadQueueManager { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,7 +80,7 @@
             viewState.BreadCrumbs.Add(new Downloader.Node(new FredCategory { Name = "Root", NativeID = "0" }, "0"));
 
         ILifetimeScope scope = container.BeginLifetimeScope();
-        downloadManager = scope.Resolve<DownloadManager>();
+        downloadQueueManager = scope.Resolve<DownloadQueueManager>();
     }
 
     private async Task DownloadClickHandler()
@@ -97,7 +97,7 @@
             args.CategoryID = parentID;
 
             logger.LogInformation("Category path download started.  Args are: {@args}", args);
-            downloadManager.QueueDownload(args);
+            downloadQueueManager.QueueDownload(args);
             StateHasChanged();
             logger.LogInformation("Category path download completed.");
         }

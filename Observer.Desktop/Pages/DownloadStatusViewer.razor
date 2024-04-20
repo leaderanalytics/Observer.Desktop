@@ -3,7 +3,7 @@
 @implements IDisposable
 <h3 class="ma-10">Downdload Status</h3>
 <MudPaper Class="pa-3 ma-10 d-flex justify-end flex-row">
-    @if (downloadManager.IsDownloading)
+    @if (downloadQueueManager.IsDownloading)
     {
         <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Cancel" OnClick="CancelDownload">Cancel Download</MudButton>
     }
@@ -15,7 +15,7 @@
 
 <MudPaper Class="ma-10 pa-10" Style="max-height:70vh;overflow:auto;">
     <MudGrid Class="flex-column">
-        @foreach(string msg in downloadManager.Messages)
+        @foreach(string msg in downloadQueueManager.Messages)
         {
             <div>@msg</div>
         }
@@ -24,14 +24,14 @@
 
 @code {
 
-    internal DownloadManager downloadManager { get; set; }
+    internal DownloadQueueManager downloadQueueManager { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         ILifetimeScope scope = container.BeginLifetimeScope();
-        downloadManager = scope.Resolve<DownloadManager>();
-        downloadManager.DownloadStatusMessage += DisplayMessage;
+        downloadQueueManager = scope.Resolve<DownloadQueueManager>();
+        downloadQueueManager.DownloadStatusMessage += DisplayMessage;
     }
 
     private void DisplayMessage(object sender, string message)
@@ -39,12 +39,12 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private async Task CancelDownload() => downloadManager.CancelAllDownloads();
+    private async Task CancelDownload() => downloadQueueManager.CancelAllDownloads();
 
 
     public void Dispose()
     {
-        downloadManager.DownloadStatusMessage -= DisplayMessage;
+        downloadQueueManager.DownloadStatusMessage -= DisplayMessage;
     }
 
 
