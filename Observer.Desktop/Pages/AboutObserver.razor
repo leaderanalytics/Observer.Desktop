@@ -1,4 +1,6 @@
 ﻿@page "/AboutObserver"
+@inherits BasePage
+@using System.Diagnostics;
 <style>
     a {
         color:silver;
@@ -13,10 +15,14 @@
             <tr>
                 <td>
                     <MudText Align="Align.Left">Version:</MudText>
+                    
                 </td>
 
                 <td>
-                    <MudText Align="Align.Right">@version</MudText>
+                    <div class="d-flex justify-end">
+                        <MudText Align="Align.Right">@version</MudText>
+                        <MudLink Class="ml-1" OnClick="(() => CopyToClipboard(version))"><MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.ContentCopy"></MudIcon></MudLink>
+                    </div>
                 </td>
 
             </tr>
@@ -58,13 +64,13 @@
 
 
 
-    @code {
+@code {
 
     private string version { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        version = "Observer.Desktop v" + System.Reflection.Assembly.GetAssembly(typeof(Observer.Desktop.Program)).GetName().Version;
+        version = "Observer.Desktop v" + FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).ProductVersion;
     }
 }

@@ -26,6 +26,8 @@
 		<PackageReference Include="LeaderAnalytics.LeaderPivot.Blazor" Version="3.0.4" />
 		<PackageReference Include="LeaderAnalytics.MessageBox.Blazor" Version="1.0.2" />
 		<PackageReference Include="LeaderAnalytics.Vyntix.FileExporters" Version="1.0.8" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Domain" Version="2.2.0" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="1.3.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="MudBlazor" Version="6.17.0" />
 		<PackageReference Include="Photino.Blazor" Version="2.7.0" />
@@ -42,10 +44,6 @@
 		<None Update="favicon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\..\Vyntix.Fred.Downloader\Vyntix.Fred.Downloader\Vyntix.Fred.Downloader.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
