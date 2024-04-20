@@ -18,9 +18,14 @@
 <MudTable ServerData="@(new Func<TableState, Task<TableData<Downloader.Node>>>(LoadNodes))"
           AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="false" @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="viewState.Take" CurrentPage="viewState.Page">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Series Categories</MudText>
+        <MudText Typo="Typo.h6">Local Series Categories</MudText>
         <MudSpacer />
-        <MudTextField T="string" ValueChanged="@OnSearch" Placeholder="Search" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudTextField T="string" Placeholder="Symbol Search" @bind-Value="searchSymbol"></MudTextField>
+        <MudSpacer />
+        <MudTextField T="string" Placeholder="Title Search" @bind-Value="searchTitle"></MudTextField>
+        <MudSpacer />
+        <MudButton Title="Search symbol or series title" IconSize="Size.Large" StartIcon="@Icons.Material.Filled.Search" Variant="Variant.Filled" @onclick="SearchClickHandler" Style="height:42px;width:42px;"></MudButton>
+        <MudButton Title="Clear search criteria" Size="Size.Large" StartIcon="@Icons.Material.Filled.SearchOff" Variant="Variant.Filled" OnClick="ClearSearchClickHandler" Class="ml-2" Style="height:42px;width:42px;"></MudButton>
     </ToolBarContent>
     <HeaderContent>
         <MudTh></MudTh>
@@ -60,6 +65,7 @@
 @code {
     [Parameter] public string? parentID { get; set; } // "0" if root
     private MudTable<LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node> seriesTable;
+    private string searchSymbol;
     private string searchTitle;
     private ViewState viewState;
     [Inject] public ILogger<CategoryViewer> logger { get => base.logger as ILogger<CategoryViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
@@ -97,9 +103,16 @@
         }
     }
 
-    private void OnSearch(string text)
+    private void SearchClickHandler()
     {
-        searchTitle = text;
+        seriesTable.CurrentPage = 0;
+        seriesTable.ReloadServerData();
+    }
+
+    private void ClearSearchClickHandler()
+    {
+        searchTitle = searchSymbol = null;
+        seriesTable.CurrentPage = 0;
         seriesTable.ReloadServerData();
     }
 
@@ -111,7 +124,8 @@
         viewState.Page = tableState.Page;
         viewState.Take = tableState.PageSize;
         viewState.SearchTitle = searchTitle;
-        IEnumerable<Downloader.Node> series = await serviceClient.CallAsync(x => x.CategoriesService.GetCategoryNodes(parentID,viewState.SortAscending, viewState.SearchTitle, viewState.Skip, viewState.Take));
+        viewState.SearchSymbol = searchSymbol;
+        IEnumerable<Downloader.Node> series = await serviceClient.CallAsync(x => x.CategoriesService.GetCategoryNodes(parentID,viewState.SortAscending, viewState.SearchTitle, viewState.SearchSymbol, viewState.Skip, viewState.Take));
         await MessageBox.HideLoading();
         return new TableData<Downloader.Node> { TotalItems = int.MaxValue, Items = series };
     }

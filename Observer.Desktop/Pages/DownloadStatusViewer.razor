@@ -1,8 +1,19 @@
 ﻿@page "/DownloadStatusViewer"
 @inherits BasePage
 @implements IDisposable
-<h3 class="ma-10">Download Status</h3>
-<MudPaper Class="ma-10 pa-10">
+<h3 class="ma-10">Downdload Status</h3>
+<MudPaper Class="pa-3 ma-10 d-flex justify-end flex-row">
+    @if (downloadManager.IsDownloading)
+    {
+        <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Cancel" OnClick="CancelDownload">Cancel Download</MudButton>
+    }
+    else
+    {
+        <MudText>No downloads are in progress</MudText>
+    }
+</MudPaper>
+
+<MudPaper Class="ma-10 pa-10" Style="max-height:70vh;overflow:auto;">
     <MudGrid Class="flex-column">
         @foreach(string msg in downloadManager.Messages)
         {
@@ -28,8 +39,13 @@
         InvokeAsync(StateHasChanged);
     }
 
+    private async Task CancelDownload() => downloadManager.CancelAllDownloads();
+
+
     public void Dispose()
     {
         downloadManager.DownloadStatusMessage -= DisplayMessage;
     }
+
+
 }

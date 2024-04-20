@@ -50,9 +50,10 @@ internal class DownloadManager
         logger.LogDebug("FredDownloadArgs queued for args: {@args}", args);
     }
 
-    internal void StopProcessing()
+    internal void ShutDown()
     {
         queue.CompleteAdding();
+        CancelAllDownloads();
         logger.LogDebug("queue.CompleteAdding() was called.");
     }
 
@@ -92,7 +93,11 @@ internal class DownloadManager
             string endTimeString = endTime.ToString(Constants.DateTimeFormat);
             string elapsed = endTime.Subtract(startTime).ToString("hh\\:mm\\:ss");
             OnDownloadStatusMessage($"Download ended at {endTimeString}.  Elapsted time is {elapsed}.");
-            logger.LogInformation("Download completed at {d}. Elapsed time is {e}.  Args are: {@args}", endTimeString, elapsed, args);
+            
+            if(CancellationToken.IsCancellationRequested)
+                logger.LogInformation("Download was cancelled.  Download completed at {d}. Elapsed time is {e}.  Args are: {@args}", endTimeString, elapsed, args);
+            else
+                logger.LogInformation("Download completed at {d}. Elapsed time is {e}.  Args are: {@args}", endTimeString, elapsed, args);
             logger.LogInformation("=======================================================================================");
         }
         logger.LogDebug("StartQueueProcessing has ended normally.");
@@ -105,6 +110,7 @@ internal class DownloadManager
         {
             CancellationTokenSource?.Cancel();
             logger.LogDebug("Cancellation was requested.");
+            OnDownloadStatusMessage("Cancellation was requested.");
         }
     }
 
@@ -114,6 +120,7 @@ internal class DownloadManager
     
     public void OnDownloadStatusMessage(string msg)
     {
+        msg = DateTime.Now.ToLongTimeString() + " - " + msg;
         Messages.Enqueue(msg);
         
         if(Messages.Count > MAX_MESSAGE_QUEUE_LEN)

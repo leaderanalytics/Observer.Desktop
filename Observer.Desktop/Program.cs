@@ -147,7 +147,7 @@ class Program
     private static async Task<bool> MainWindowClosing(object sender, EventArgs e)
     {
         Log.Debug("App shutdown has been requested.  Stopping DownloadManager");
-        downloadManager.StopProcessing();
+        downloadManager.ShutDown();
         Log.Debug("App shutdown has been requested.  Waiting for in-process download jobs to complete.");
         await tcs.Task;
         Log.Debug("App shutdown has been requested. All in-process download jobs have ended normally.  App will shut down.");
