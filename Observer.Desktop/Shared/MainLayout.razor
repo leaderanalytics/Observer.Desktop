@@ -1,5 +1,10 @@
 ﻿@inherits LayoutComponentBase
-<CustomErrorBoundry>
+
+<CustomErrorBoundry @ref="errorBoundry">
+    <ErrorContent>
+        @errorBoundry.CurrentException.ToString();
+    </ErrorContent>
+    <ChildContent>
     <MudThemeProvider Theme="_currentTheme" />
     <MudDialogProvider />
     <MudSnackbarProvider />
@@ -33,6 +38,7 @@
             @Body
         </MudMainContent>
     </MudLayout>
+    </ChildContent>
 </CustomErrorBoundry>
 
 
@@ -43,7 +49,7 @@
     private bool _drawerOpen = false;
     private bool _rightToLeft = false;
     private NavMenu _navMenuRef;
-
+    private CustomErrorBoundry errorBoundry;
     public RenderFragment Header
     {
         get => header;

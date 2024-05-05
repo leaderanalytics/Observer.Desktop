@@ -11,8 +11,8 @@
 	  <RootNamespace>LeaderAnalytics.Observer.Desktop</RootNamespace>
 	  <AssemblyName>Observer</AssemblyName>
   </PropertyGroup>
-  
-  <ItemGroup>
+
+<ItemGroup>
     <Content Remove="Pages\BasePage.razor" />
     <Content Remove="Shared\MessageBox.razor" />
     <Content Remove="Shared\MessageBoxProvider.razor" />

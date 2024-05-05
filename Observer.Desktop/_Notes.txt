@@ -1,9 +1,0 @@
-﻿--- Ubuntu publishing ---
-https://askubuntu.com/questions/71510/how-do-i-create-a-ppa
-https://packaging.ubuntu.com/html/getting-set-up.html
-
-2023-06-04 Stop work to refactor Vyntix.
-2024-04-20
-Update Observer.CLI
-Update documentation
-Publish to windows store and Vyntix web site

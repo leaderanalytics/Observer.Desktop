@@ -1,0 +1,18 @@
+﻿--- Ubuntu publishing ---
+https://askubuntu.com/questions/71510/how-do-i-create-a-ppa
+https://packaging.ubuntu.com/html/getting-set-up.html
+
+2023-06-04 Stop work to refactor Vyntix.
+2024-04-20
+Update Observer.CLI
+Update documentation
+Publish to windows store and Vyntix web site
+
+--- Click Once ---
+https://github.com/dotnet/deployment-tools/tree/main/docs/dotnet-mage
+https://learn.microsoft.com/en-us/dotnet/framework/tools/mage-exe-manifest-generation-and-editing-tool
+https://www.rubberchickenparadise.com/blog/2021-11-18-automating-clickonce-deployment-for-net-5-0-winforms/
+
+dotnet tool install --global microsoft.dotnet.mage --version 8.0.0
+
+./ClickOnce.ps1 -version 1.0.0.0 -packageName "Observer.Desktop" -confituration "Release" -networkDeployPath "c:\temp" -winformsProjLocation "C:\Git\Observer.Desktop" -packageOutDir "c:\temp\Observer.Desktop.ClickOnce"

@@ -6,6 +6,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        NavigationManager.NavigateTo("seriesViewer");
+        await base.OnInitializedAsync();
+
+        if(await PreFlightCheck())
+            NavigationManager.NavigateTo("seriesViewer");
+    }
+
+    protected async Task<bool> PreFlightCheck()
+    {
+        bool status = true;
+
+        try
+        {
+            // Try to get an invalid symbol just to test connectivity to the db
+            await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries("test"));
+        }
+        catch (Exception ex)
+        {
+            status = false;
+
+            if (ex.Message.Contains("functional EndPointConfiguration could not be resolved"))
+                NavigationManager.NavigateTo("databaseMaintenance");
+            else
+                throw new Exception("PreFlightCheck failed.  See inner exception for more detail.", ex);
+
+        }
+        return status;
     }
 }

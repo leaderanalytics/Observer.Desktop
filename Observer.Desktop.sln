@@ -7,6 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Observer.Desktop", "Observe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A2F27CEF-DC56-40FB-9B25-778B02431BBC}"
 	ProjectSection(SolutionItems) = preProject
+		ClickOnce.bat = ClickOnce.bat
+		Notes.txt = Notes.txt
+		ClickOnce.ps1 = ClickOnce.ps1
 		version.json = version.json
 	EndProjectSection
 EndProject
