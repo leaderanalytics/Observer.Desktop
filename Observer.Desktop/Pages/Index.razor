@@ -1,9 +1,10 @@
 ﻿@page "/"
 @inherits BasePage
+@using Velopack;
 
 @code {
     [Inject] NavigationManager NavigationManager { get; set; }
-
+    [Inject] ILogger<Index> logger { get; set; }
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -33,7 +34,7 @@
             else
                 throw new Exception("PreFlightCheck failed.  See inner exception for more detail.", ex);
         }
-        
+
 
         // Test Fred API authentication.  Only check FRED Auth if database check passes otherwise user 
         // sees exception and does not navigate to databaseMaintenance
@@ -43,7 +44,37 @@
             await MessageBox.Warn($"Observer Desktop is unable to establish communications with the FRED API.{Environment.NewLine}Your internet connection may be down or you may not have configured your FRED API key correctly.{Environment.NewLine}Click Abount Vyntix Observer on the menu for the documentation link and instructions how to report a technical difficulty.");    
         }
 
-
+        await CheckForProgramUpdate();
         return status;
+    }
+
+    // Velopack
+    protected  async Task CheckForProgramUpdate()
+    {
+        var mgr = new UpdateManager(AppState.ProgramUpdateURL);
+
+        // check for new version
+        UpdateInfo? newVersion = null;
+
+        try
+        {
+            newVersion = await mgr.CheckForUpdatesAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation("Check for program update failed.  The exception is: {e}", ex.ToString());
+        }
+
+        if (newVersion == null)
+            return; // no update available
+
+        // download new version
+        if(await MessageBox.Ask("An update to Observer Desktop is available.  Do you want to install it?"))
+        {
+            await mgr.DownloadUpdatesAsync(newVersion);
+
+            // install new version and restart app
+            mgr.ApplyUpdatesAndRestart(newVersion);
+        }
     }
 }

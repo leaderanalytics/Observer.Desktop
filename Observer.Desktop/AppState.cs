@@ -1,24 +1,26 @@
-﻿namespace LeaderAnalytics.Observer.Desktop;
+﻿using System.Runtime.InteropServices;
+
+namespace LeaderAnalytics.Observer.Desktop;
 
 internal class AppState
 {
     internal UserSettings UserSettings { get; set; }
     private readonly UserSettingsService userSettingsService;
     private List<ViewState> ViewStates { get; set; }
+    public string ProgramUpdateURL { get; private set; }        // Url to check for updates to this program.
+    public OSPlatform OSPlatform { get; private set; }
 
-
-
-    internal AppState(UserSettingsService userSettingsService)
+    internal AppState(UserSettingsService userSettingsService, OSPlatform os, string programUpdateURL)
     {
         this.userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
+        OSPlatform = os;
+        ProgramUpdateURL = programUpdateURL;
         LoadUserSettings();
         ViewStates = new();
     }
 
     internal void LoadUserSettings() => UserSettings = userSettingsService.GetUserSettings();
     internal void SaveUserSettings() => userSettingsService.SaveUserSettings(UserSettings);
-
-
 
     internal ViewState GetViewState(View view)
     {

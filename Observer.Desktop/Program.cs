@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using Serilog;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-
+using Velopack;
+using System.Runtime.InteropServices;
 
 //https://github.com/dotnet/docfx
 
@@ -22,6 +23,8 @@ class Program
     public static void Main(string[] args)
     {
         LeaderAnalytics.Core.EnvironmentName environmentName = LeaderAnalytics.Core.RuntimeEnvironment.GetEnvironmentName();
+        OSPlatform os = FindOSPlatform();
+        string configFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LeaderAnalytics", "Vyntix", "ObserverDesktop");
         string logFolder = "logs/"; // fallback location if we cannot read config
         Exception startupEx = null;
         IConfigurationRoot appConfig = null;
@@ -31,7 +34,7 @@ class Program
 
         try
         {
-            appConfig = ConfigHelper.BuildConfig(environmentName).Result;
+            appConfig = ConfigHelper.BuildConfig(environmentName, configFilePath).Result;  // Creates configFilePath if it does not exist.
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(appConfig).CreateLogger();
         }
         catch (Exception ex)
@@ -58,8 +61,12 @@ class Program
 
         try
         {
+            VelopackApp.Build().Run();
+            Log.Information("VelopackApp ran successfully.");
+            Log.Information("Operating system is {o}", os.ToString());
+            Log.Information("ConfigFilePath is {c}", configFilePath);
+            AppState appState = new(new UserSettingsService(configFilePath), os, appConfig["ProgramUpdateURL"]);  // UserSettings read from disk and loaded here.
             string apiKey = appConfig["FredAPI_Key"];
-            AppState appState = new(new UserSettingsService());  // UserSettings read from disk and loaded here.
             IEnumerable<IEndPointConfiguration> endPoints = appConfig.GetSection("EndPoints").Get<IEnumerable<EndPointConfiguration>>();
             var builder = PhotinoBlazorAppBuilder.CreateDefault(args);
             // Cannot call UseServiceProviderFactory() on PhotinoBlazorAppBuilder since it does not implement IHostBuilder.
@@ -111,7 +118,7 @@ class Program
 
             // Start polling the download queue 
             Task.Run(downloadQueueManager.StartQueueProcessing); 
-            app.MainWindow.SetIconFile("favicon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
+            app.MainWindow.SetIconFile("icon.ico").SetTitle("Observer").SetSize(new System.Drawing.Size(1200,800)); //width,height
             app.MainWindow.RegisterWindowClosingHandler((x, y) => Task.Run(async () => await MainWindowClosing(x, y)).Result);
             Log.Information("App configuration was successful.");
         }
@@ -152,6 +159,22 @@ class Program
         await tcs.Task;
         Log.Debug("App shutdown has been requested. All in-process download jobs have ended normally.  App will shut down.");
         return false; // true prevents window from closing
+    }
+
+    private static OSPlatform FindOSPlatform()
+    {
+        OSPlatform platform;
+
+        if (OperatingSystem.IsWindows())
+            platform = OSPlatform.Windows;
+        else if (OperatingSystem.IsIOS())
+            platform = OSPlatform.OSX;
+        else if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
+            platform = OSPlatform.Linux;
+        else
+            throw new Exception("Your operating system is not supported.");
+
+        return platform;
     }
 }
 
