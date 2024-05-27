@@ -15,20 +15,40 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+# nbgv need a deep clone
+
+- checkout: self
+  fetchDepth: 0
+
+# install nbgv tooling
+
+- task: DotNetCoreCLI@2  
+  displayName: Install NBGV tool
+  inputs:
+    command: custom
+    custom: tool
+    arguments: install --tool-path . nbgv
+
+# allow nbgv to set the version
+
+- script: nbgv cloud
+  displayName: Set Version
+
+- task: UseDotNet@2
+  displayName: 'Use dotnet 8'
+  inputs:
+    version: '8.x'
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+    vstsFeed: 'LeaderAnalyticsFeed'
 
-- task: VSBuild@1
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'build'
+    arguments: '--configuration $(buildConfiguration)'
+    projects: $(project)
