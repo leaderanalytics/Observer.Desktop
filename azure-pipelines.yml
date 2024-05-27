@@ -66,9 +66,9 @@ steps:
 
 - script: |
     dotnet tool install -g vpk
-    vpk download github --repoUrl https://github.com/Myname/Myrepo
+    vpk download github --repoUrl https://github.com/leaderanalytics/Observer.Desktop
     vpk pack -u MyUniqueIdentifier -v ${{ steps.get-version.outputs.version }} -p publish
-    vpk upload github --repoUrl https://github.com/Myname/Myrepo --publish --releaseName "MyProject ${{ steps.get-version.outputs.version }}" --tag v${{ steps.get-version.outputs.version }}
+    vpk upload github --repoUrl https://github.com/leaderanalytics/Observer.Desktop --publish --releaseName "MyProject ${{ steps.get-version.outputs.version }}" --tag v${{ steps.get-version.outputs.version }}
 
 
 
