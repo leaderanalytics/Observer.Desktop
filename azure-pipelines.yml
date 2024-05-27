@@ -67,8 +67,8 @@ steps:
 - script: |
     dotnet tool install -g vpk
     vpk download github --repoUrl https://github.com/leaderanalytics/Observer.Desktop
-    vpk pack -u MyUniqueIdentifier -v ${{ steps.get-version.outputs.version }} -p publish
-    vpk upload github --repoUrl https://github.com/leaderanalytics/Observer.Desktop --publish --releaseName "MyProject ${{ steps.get-version.outputs.version }}" --tag v${{ steps.get-version.outputs.version }}
+    vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p .\bin\Release\net8\win-x64\publish -e Observer.exe
+    vpk upload github --repoUrl https://github.com/leaderanalytics/Observer.Desktop --publish --releaseName "Observer.Desktop 1.0.0" --tag v1.0.0
 
 
 
