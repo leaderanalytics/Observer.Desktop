@@ -60,7 +60,7 @@ steps:
     command: publish
     publishWebProjects: false
     projects: $(project)
-    arguments: -c Release -o publish -r win-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/publish
+    arguments: -c Release -r win-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)/publish
     zipAfterPublish: false
 
 
