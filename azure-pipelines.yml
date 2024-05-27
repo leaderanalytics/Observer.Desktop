@@ -66,7 +66,7 @@ steps:
 
 - script: |
     dotnet tool install -g vpk
-    vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p $(Build.ArtifactStagingDirectory)\publish -e Observer.exe -i icon.ico
+    vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p $(Build.ArtifactStagingDirectory)\publish -e Observer.exe -i $(Build.ArtifactStagingDirectory)\publish\icon.ico
     vpk upload github --repoUrl https://github.com/leaderanalytics/Observer.Desktop --publish --releaseName "Observer.Desktop 1.0.0" --tag v1.0.0
 
 
