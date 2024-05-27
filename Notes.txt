@@ -1,0 +1,45 @@
+﻿--- Ubuntu publishing ---
+https://askubuntu.com/questions/71510/how-do-i-create-a-ppa
+https://packaging.ubuntu.com/html/getting-set-up.html
+
+2023-06-04 Stop work to refactor Vyntix.
+2024-04-20
+Update Observer.CLI
+Update documentation
+Publish to windows store and Vyntix web site
+
+--- Click Once ---
+https://github.com/dotnet/deployment-tools/tree/main/docs/dotnet-mage
+https://learn.microsoft.com/en-us/dotnet/framework/tools/mage-exe-manifest-generation-and-editing-tool
+https://www.rubberchickenparadise.com/blog/2021-11-18-automating-clickonce-deployment-for-net-5-0-winforms/
+
+// To install mage:
+dotnet tool install --global microsoft.dotnet.mage --version 8.0.0
+
+Copy binaries from bin/Release/netx to C:\ClickOnce\Observer.Desktop\x.x.x.x
+
+
+
+Run ClickOnce.ps1
+                                                                    VVVVV    NOT A TYPEO
+./ClickOnce.ps1 -version 1.0.0.0 -packageName "Observer.Desktop" -confituration "Release" -networkDeployPath "c:\temp" -winformsProjLocation "C:\Git\Observer.Desktop" -packageOutDir "c:\temp\Observer.Desktop.ClickOnce"
+
+                                                                   ^^^^^^^ NOT A TYPEO
+
+
+--- Velopack ---
+https://docs.velopack.io/getting-started/csharp
+https://docs.velopack.io/distributing/deploy-cli
+> In order for delta's to be generated during the pack command, you need to first download the current latest release. This should be done with the download command:
+Change VS to Release configuration
+Disable LeaderAnalytics feed
+Open command window in .csproj folder
+dotnet publish -c Release --self-contained -r win-x64 -o .\bin\Release\net8\win-x64\publish
+vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p .\bin\Release\net8\win-x64\publish -e Observer.exe -o c:\Shared\Releases\Observer.Desktop\Windows\ -i icon.ico
+
+Look at parameters to pack command
+create a script that will parse version.json
+Create an icon.
+
+--- Azure ---
+https://blog.devops.dev/a-complete-guide-to-azure-devops-pipelines-with-yaml-templates-636cbebc52eb

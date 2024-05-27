@@ -3,16 +3,22 @@
 namespace LeaderAnalytics.Observer.Desktop;
 internal class UserSettingsService
 {
+    private static string ConfigFilePath;
     private static string _SettingsFileName;
     private static string SettingsFileName
     {
         get
         { 
             if(_SettingsFileName == null)
-                _SettingsFileName = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "UserSettings.json");
+                _SettingsFileName = Path.Combine(ConfigFilePath, "UserSettings.json");
 
             return _SettingsFileName;
         }
+    }
+
+    public UserSettingsService(string configFilePath)
+    {
+        ConfigFilePath = configFilePath ?? throw new Exception("configFilePath is required.");
     }
 
     internal UserSettings GetUserSettings()

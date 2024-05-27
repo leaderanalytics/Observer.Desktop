@@ -1,11 +1,80 @@
 ﻿@page "/"
 @inherits BasePage
+@using Velopack;
 
 @code {
     [Inject] NavigationManager NavigationManager { get; set; }
-
+    [Inject] ILogger<Index> logger { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        NavigationManager.NavigateTo("seriesViewer");
+        await base.OnInitializedAsync();
+
+        if(await PreFlightCheck())
+            NavigationManager.NavigateTo("seriesViewer");
+    }
+
+    protected async Task<bool> PreFlightCheck()
+    {
+        bool status = true;
+
+        // Test connectivity to the db
+        try
+        {
+            await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries("test"));
+        }
+        catch (Exception ex)
+        {
+            status = false;
+
+            if (ex.Message.Contains("functional EndPointConfiguration"))
+            {
+                await MessageBox.Warn($"Observer Desktop is unable to connect to your database.{Environment.NewLine}Make sure the ConnectionString property in the appsettings.production.json file is sect correctly. {Environment.NewLine}Click Abount Vyntix Observer on the menu for the documentation link and instructions how to report a technical difficulty.");
+                NavigationManager.NavigateTo("databaseMaintenance");
+            }
+            else
+                throw new Exception("PreFlightCheck failed.  See inner exception for more detail.", ex);
+        }
+
+
+        // Test Fred API authentication.  Only check FRED Auth if database check passes otherwise user 
+        // sees exception and does not navigate to databaseMaintenance
+
+        if (status && (!await serviceClient.CallAsync(x => x.AuthenticationService.IsAPI_KeyValid())))
+        {
+            await MessageBox.Warn($"Observer Desktop is unable to establish communications with the FRED API.{Environment.NewLine}Your internet connection may be down or you may not have configured your FRED API key correctly.{Environment.NewLine}Click Abount Vyntix Observer on the menu for the documentation link and instructions how to report a technical difficulty.");    
+        }
+
+        await CheckForProgramUpdate();
+        return status;
+    }
+
+    // Velopack
+    protected  async Task CheckForProgramUpdate()
+    {
+        var mgr = new UpdateManager(AppState.ProgramUpdateURL);
+
+        // check for new version
+        UpdateInfo? newVersion = null;
+
+        try
+        {
+            newVersion = await mgr.CheckForUpdatesAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation("Check for program update failed.  The exception is: {e}", ex.ToString());
+        }
+
+        if (newVersion == null)
+            return; // no update available
+
+        // download new version
+        if(await MessageBox.Ask("An update to Observer Desktop is available.  Do you want to install it?"))
+        {
+            await mgr.DownloadUpdatesAsync(newVersion);
+
+            // install new version and restart app
+            mgr.ApplyUpdatesAndRestart(newVersion);
+        }
     }
 }
