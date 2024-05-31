@@ -32,7 +32,7 @@ steps:
     arguments: install --tool-path . nbgv
 
 - powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
-    displayName: 'Update build number to GitBuildVersion'
+  displayName: 'Update build number to GitBuildVersion'
 
 # allow nbgv to set the version
 
