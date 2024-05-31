@@ -63,11 +63,19 @@ steps:
     arguments: -c Release -r win-x64 --self-contained true --output $(Build.ArtifactStagingDirectory)\publish
     zipAfterPublish: false
 
+- task: AzureKeyVault@1
+  name: KeyVaultSecrets
+  displayName: Get github api key from Key Vault
+  inputs:
+    azureSubscription: 'All Azure Services'
+    KeyVaultName: 'LeaderAnalyticsVault'
+    SecretsFilter: 'github-apikey'
+
 
 - script: |
     dotnet tool install -g vpk
     vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p $(Build.ArtifactStagingDirectory)\publish\Observer.Desktop -e Observer.exe 
-    vpk upload github --repoUrl https://github.com/leaderanalytics/Observer.Desktop --publish --releaseName "Observer.Desktop 1.0.0" --tag v1.0.0
+    vpk upload github --repoUrl https://github.com/leaderanalytics/Observer.Desktop --publish --releaseName "Observer.Desktop 1.0.0" --tag v1.0.0 --token $(github-apikey)
 
 
 
