@@ -31,6 +31,9 @@ steps:
     custom: tool
     arguments: install --tool-path . nbgv
 
+- script: nbgv cloud -c -a
+  displayName: nbgv cloud set version
+
 - powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
   displayName: 'Update build number to GitBuildVersion'
 
