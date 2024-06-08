@@ -19,6 +19,9 @@ variables:
   repoUrl: 'https://github.com/leaderanalytics/Observer.Desktop'
 
 steps:
+
+- bash: |
+    echo "Tag name is " $(Build.SourceBranch)    
 # nbgv need a deep clone
 
 - checkout: self
