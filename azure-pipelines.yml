@@ -88,7 +88,7 @@ steps:
   
 - powershell: |
     $tmp = '$(GitBuildVersion)'.Substring(0, '$(GitBuildVersion)'.LastIndexof('.'))
-    "##vsl[task.setvariable variable=semVer;]$tmp"
+    Write-Host "##vso[task.setvariable variable=semVer;]$tmp"
   displayName: Trim build off GitBuildVersion
   
 
@@ -101,7 +101,7 @@ steps:
     dotnet tool install -g vpk
     vpk download github --repoUrl $(repoUrl)
     vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v $(semVer) -p $(Build.ArtifactStagingDirectory)\publish\Observer.Desktop -e Observer.exe -c win
-    vpk upload github --repoUrl $(repoUrl) --publish --releaseName "Observer Desktop for Windows $(SemVer)" --tag windows/$(Build.BuildNumber) --token $(github-token) 
+    vpk upload github --repoUrl $(repoUrl) --publish --releaseName "Observer Desktop for Windows $(semVer)" --tag windows/$(Build.BuildNumber) --token $(github-token) 
 
 
 
