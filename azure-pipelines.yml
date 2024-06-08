@@ -87,7 +87,7 @@ steps:
   displayName: 'Update build number to GitBuildVersion'
   
 - powershell: |
-    $tmp = $(GitBuildVersion).Substring(0, $(GitBuildVersion).Indexof('.',3))
+    $tmp = $(GitBuildVersion).Substring(0, $(GitBuildVersion).Indexof('.',2))
     "##vsl[task.setvariable variable=semVer]$tmp"
   displayName: Trim build off GitBuildVersion
 
