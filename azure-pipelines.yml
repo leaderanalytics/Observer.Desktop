@@ -39,8 +39,6 @@ steps:
 
 # allow nbgv to set the version
 
-- powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
-  displayName: 'Update build number to GitBuildVersion'
 
 - bash: |
     echo Build.SourceBranch is  $(Build.SourceBranch)    
@@ -83,6 +81,9 @@ steps:
     azureSubscription: 'All Azure Services'
     KeyVaultName: 'LeaderAnalyticsVault'
     SecretsFilter: 'github-token'
+
+- powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
+  displayName: 'Update build number to GitBuildVersion'
 
 - bash: |
     echo Build.SourceBranch is  $(Build.SourceBranch)    
