@@ -44,7 +44,7 @@ steps:
 
 - bash: |
     echo Build.SourceBranch is  $(Build.SourceBranch)    
-    echo Build.BuildNumber id $(Build.BuildNumber)
+    echo Build.BuildNumber is $(Build.BuildNumber)
   displayName: 'Print Tag and BuildNumber'
 
 
@@ -84,12 +84,16 @@ steps:
     KeyVaultName: 'LeaderAnalyticsVault'
     SecretsFilter: 'github-token'
 
+- bash: |
+    echo Build.SourceBranch is  $(Build.SourceBranch)    
+    echo Build.BuildNumber is $(Build.BuildNumber)
+  displayName: 'Print Tag and BuildNumber'
 
 - script: |
     dotnet tool install -g vpk
     vpk download github --repoUrl $(repoUrl)
     vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v $(Build.BuildNumber) -p $(Build.ArtifactStagingDirectory)\publish\Observer.Desktop -e Observer.exe -c win
-    vpk upload github --repoUrl $(repoUrl) --publish --releaseName Observer Desktop for Windows $(Build.BuildNumber) --tag windows/$(Build.BuildNumber) --token $(github-token) 
+    vpk upload github --repoUrl $(repoUrl) --publish --releaseName "Observer Desktop for Windows $(Build.BuildNumber)" --tag windows/$(Build.BuildNumber) --token $(github-token) 
 
 
 
