@@ -87,7 +87,7 @@ steps:
   displayName: 'Update build number to GitBuildVersion'
   
 - powershell: |
-    $len = '$(GitBuildVersion)'.Indexof('.', 3)
+    $len = '$(GitBuildVersion)'.LastIndexof('.')
     Write-Host "len is " + $len
     $tmp = '$(GitBuildVersion)'.Substring(0, $len)
     "##vsl[task.setvariable variable=semVer]$tmp"
