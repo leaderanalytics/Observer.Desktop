@@ -87,13 +87,10 @@ steps:
   displayName: 'Update build number to GitBuildVersion'
   
 - powershell: |
-    $len = '$(GitBuildVersion)'.LastIndexof('.')
-    Write-Host "len is " + $len
-    $tmp = '$(GitBuildVersion)'.Substring(0, $len)
-    "##vsl[task.setvariable variable=semVer]$tmp"
+    $tmp = '$(GitBuildVersion)'.Substring(0, '$(GitBuildVersion)'.LastIndexof('.'))
+    "##vsl[task.setvariable variable=semVer;]$tmp"
   displayName: Trim build off GitBuildVersion
-
-
+  
 
 - bash: |
     echo Build.SourceBranch is $(Build.SourceBranch)    
