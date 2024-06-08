@@ -86,8 +86,9 @@ steps:
 - powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
   displayName: 'Update build number to GitBuildVersion'
   
-- powershell: : Write-Host "##vso[task.setvariable variable=semVer;]$(GitBuildVersion).Substring(0, $(GitBuildVersion).Indexof(".",3))"
+- powershell: "##vsl[task.setvariable variable=semVer]$($(GitBuildVersion).Substring(0, $(GitBuildVersion).Indexof('.',3)))"
   displayName: Trim build off GitBuildVersion
+
 
 
 - bash: |
