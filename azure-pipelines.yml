@@ -39,17 +39,13 @@ steps:
 
 # allow nbgv to set the version
 
-- script: nbgv cloud
-  displayName: Set Version
-
 - powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
   displayName: 'Update build number to GitBuildVersion'
 
-
-  - bash: |
-      echo Build.SourceBranch is  $(Build.SourceBranch)    
-      echo Build.BuildNumber id $(Build.BuildNumber)
-    displanyName: 'Print Tag and BuildNumber'
+- bash: |
+    echo Build.SourceBranch is  $(Build.SourceBranch)    
+    echo Build.BuildNumber id $(Build.BuildNumber)
+  displayName: 'Print Tag and BuildNumber'
 
 
 - task: UseDotNet@2
