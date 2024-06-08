@@ -17,6 +17,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   repoUrl: 'https://github.com/leaderanalytics/Observer.Desktop'
+  semVer: ''
 
 steps:
 
@@ -85,16 +86,20 @@ steps:
 - powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
   displayName: 'Update build number to GitBuildVersion'
   
+- powershell: : Write-Host "##vso[task.setvariable variable=semVer;]$(GitBuildVersion).Substring(0, $(GitBuildVersion).Indexof(".",3))"
+  displayName: Trim build off GitBuildVersion
+
+
 - bash: |
-    echo Build.SourceBranch is  $(Build.SourceBranch)    
-    echo GitBuildVersion is $(GitBuildVersion)
+    echo Build.SourceBranch is $(Build.SourceBranch)    
+    echo semVer is $(semVer)
   displayName: 'Print Tag and BuildNumber'
 
 - script: |
     dotnet tool install -g vpk
     vpk download github --repoUrl $(repoUrl)
-    vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v $(GitBuildVersion) -p $(Build.ArtifactStagingDirectory)\publish\Observer.Desktop -e Observer.exe -c win
-    vpk upload github --repoUrl $(repoUrl) --publish --releaseName "Observer Desktop for Windows $(GitBuildVersion)" --tag windows/$(Build.BuildNumber) --token $(github-token) 
+    vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v $(semVer) -p $(Build.ArtifactStagingDirectory)\publish\Observer.Desktop -e Observer.exe -c win
+    vpk upload github --repoUrl $(repoUrl) --publish --releaseName "Observer Desktop for Windows $(SemVer)" --tag windows/$(Build.BuildNumber) --token $(github-token) 
 
 
 
