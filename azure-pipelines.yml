@@ -88,7 +88,7 @@ steps:
   
 - powershell: |
     $tmp = $(GitBuildVersion).Substring(0, $(GitBuildVersion).Indexof('.',3))
-    "##vsl[task.setvariable variable=semVer]$(tmp)"
+    "##vsl[task.setvariable variable=semVer]$tmp"
   displayName: Trim build off GitBuildVersion
 
 
