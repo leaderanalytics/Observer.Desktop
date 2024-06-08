@@ -20,8 +20,6 @@ variables:
 
 steps:
 
-- bash: |
-    echo "Tag name is " $(Build.SourceBranch)    
 # nbgv need a deep clone
 
 - checkout: self
@@ -36,16 +34,23 @@ steps:
     custom: tool
     arguments: install --tool-path . nbgv
 
-- script: nbgv cloud -c -a
+- script: nbgv cloud -c 
   displayName: nbgv cloud set version
-
-- powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
-  displayName: 'Update build number to GitBuildVersion'
 
 # allow nbgv to set the version
 
 - script: nbgv cloud
   displayName: Set Version
+
+- powershell: Write-Host "##vso[build.updatebuildnumber]$(GitBuildVersion)"
+  displayName: 'Update build number to GitBuildVersion'
+
+
+  - bash: |
+      echo Build.SourceBranch is  $(Build.SourceBranch)    
+      echo Build.BuildNumber id $(Build.BuildNumber)
+    displanyName: 'Print Tag and BuildNumber'
+
 
 - task: UseDotNet@2
   displayName: 'Use dotnet 8'
