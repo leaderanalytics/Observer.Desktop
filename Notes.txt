@@ -23,3 +23,8 @@ https://blog.devops.dev/a-complete-guide-to-azure-devops-pipelines-with-yaml-tem
 --- Github ---
 https://github.com/settings/tokens/new
 
+ConfigFilePath is C:\Users\sam\AppData\Roaming\LeaderAnalytics\Vyntix\ObserverDesktop
+
+Todo:
+Make a screen for inputting connection string and api ke
+When starting observer for the first time when the db does not exist, it throws db not found error after the db is created.

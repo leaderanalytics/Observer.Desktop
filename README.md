@@ -1,20 +1,25 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+![Leader Analytics](./Images/VyntixLogo.png)
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+Observer Desktop is a utility for downloading data from the FRED API and saving it in a database on your local desktop or laptop machine.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+Observer Desktop has powerful export features that allow you to export data from your local database to an Excel or CSV file. You can export vintage data in list or matrix format.
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+Series can be viewed in list format or in a hierarchical format by FRED category.
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+The program downloads the following data elements: Series meta data, observations, vintages, series tags, releases, release dates, sources, child categories, related categories, category tags.
+
+Observer Desktop contains features that allow you view data as a list, a matrix (pivot table), or a graph. You can quickly view properties of a series such as frequency and units. Data can be viewed (and exported) in sparse or dense format. Sparse format contains only data that is changed for each vintage. Dense format repeats unchanged data from prior vintages. Dense data is often easier to work with in a spreadsheet and is sometimes easier to visualize.
+
+NOTE: In order to use Observer Desktop you must install a Database management system (DBMS) such as Microsoft SQL Server or MySQL on your machine, or you must have access to a DBMS on your local area network. See the [documentation](https://vyntix.com/docs/intro.html) for more detail .
+
+If you prefer a command line interface for batch or scheduled data updates, try [Observer CLI](https://github.com/leaderanalytics/Observer.CLI).  Both Observer Desktop and Observer CLI are ased on the the powerful [Vyntix Fred Client](https://github.com/leaderanalytics/Vyntix.Fred.FredClient) which is used to access the FRED API.  
+
+
+![Screen cap](./Images/ObserverDesktop01.jpg)
+![Screen cap](./Images/ObserverDesktop02.jpg)
+![Screen cap](./Images/ObserverDesktop03.jpg)
+![Screen cap](./Images/ObserverDesktop04.jpg)
+![Screen cap](./Images/ObserverDesktop05.jpg)
+![Screen cap](./Images/ObserverDesktop06.jpg)
+![Screen cap](./Images/ObserverDesktop07.jpg)
+![Screen cap](./Images/ObserverDesktop08.jpg)
