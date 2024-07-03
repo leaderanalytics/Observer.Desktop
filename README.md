@@ -2,7 +2,7 @@
 
 Observer Desktop is a utility for downloading data from the St. Louis Federal Reserve Bank [FRED API](https://fred.stlouisfed.org/docs/api/fred/) and saving it in a database on your local desktop or laptop machine.
 
-Observer Desktop Windows Installer can be downloaded from the Vyntix website(https://vyntix.com/Downloads).
+Observer Desktop Windows Installer can be downloaded from the [Vyntix website](https://vyntix.com/Downloads).
 
 Observer Desktop has powerful export features that allow you to export data from your local database to an Excel or CSV file. You can export vintage data in list or matrix format.
 
