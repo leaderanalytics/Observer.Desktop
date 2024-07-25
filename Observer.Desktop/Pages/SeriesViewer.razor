@@ -1,9 +1,10 @@
 ﻿@page "/seriesViewer"
 @inherits SeriesViewBasePage
     <MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-end gap-8">
+        <MudIconButton Title="Refresh" Size="Size.Large" Icon="@Icons.Material.Filled.Refresh" Variant="Variant.Filled" @onclick="RefreshClickHandler" />
         <MudIconButton Title="Add Series" Size="Size.Large" Icon="@Icons.Material.Filled.Add" Variant="Variant.Filled" @onclick="AddSeriesClickHandler"  />
         <MudIconButton Title="Update all series" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="UpdateAllSeriesClickHandler" Class="d-flex"></MudIconButton>
-    <MudIconButton Title="Update selected series" Size="Size.Large" Icon="@Icons.Material.Filled.DownloadForOffline" Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex"></MudIconButton>
+        <MudIconButton Title="Update selected series" Size="Size.Large" Icon="@Icons.Material.Filled.DownloadForOffline" Variant="Variant.Filled" @onclick="UpdateSelectedSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex"></MudIconButton>
         <MudIconButton Title="Delete selected series" Size="Size.Large" Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" @onclick="DeleteSeriesClickHandler" Disabled="selectedItems.Count == 0" Class="d-flex" ></MudIconButton>
     </MudPaper>
     <MudTable ServerData="@(new Func<TableState, Task<TableData<FredSeries>>>(LoadSeries))" 
@@ -67,7 +68,7 @@
     private HashSet<FredSeries> selectedItems { get; set; } = new HashSet<FredSeries>();
     private ViewState viewState;
     [Inject] public ILogger<SeriesViewer> logger { get => base.logger as ILogger<SeriesViewer>; set { base.logger = value as ILogger<SeriesViewBasePage>; } }
-    
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -103,6 +104,8 @@
             await seriesTable.ReloadServerData();
     }
 
+    protected async Task RefreshClickHandler() => await seriesTable.ReloadServerData();
+
     private async Task<TableData<FredSeries>> LoadSeries(TableState tableState)
     {
         await MessageBox.ShowLoading();
@@ -113,6 +116,7 @@
         viewState.SearchTitle = searchTitle;
         viewState.SearchSymbol = searchSymbol;
         IEnumerable<FredSeries> series = await serviceClient.CallAsync(x => x.SeriesService.GetLocalSeries(viewState.SearchSymbol, viewState.SearchTitle, viewState.SortExpression, viewState.SortAscending, viewState.Skip, viewState.Take));
+        
         await MessageBox.HideLoading();
         return new TableData<FredSeries> { TotalItems = int.MaxValue, Items = series };
     }

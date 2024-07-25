@@ -16,6 +16,8 @@ namespace LeaderAnalytics.Observer.Desktop;
 
 class Program
 {
+    // We never load the config directly from this folder - we copy from this folder to configFilePath if the development config file does not exist there.
+    private static readonly string configFileSourceFolder = "O:\\LeaderAnalytics\\Config\\Observer.Desktop"; 
     internal static TaskCompletionSource<bool> tcs = new();
     internal static DownloadQueueManager downloadQueueManager;
 
@@ -24,7 +26,9 @@ class Program
     {
         LeaderAnalytics.Core.EnvironmentName environmentName = LeaderAnalytics.Core.RuntimeEnvironment.GetEnvironmentName();
         OSPlatform os = FindOSPlatform();
-        string configFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LeaderAnalytics", "Vyntix", "ObserverDesktop");
+        string configFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LeaderAnalytics", "Vyntix", "Observer.Desktop");
+        string configSource = environmentName == EnvironmentName.production ? AppContext.BaseDirectory : configFileSourceFolder;
+        ConfigHelper.CopyConfigFromSource(environmentName, configSource, configFilePath); 
         string logFolder = "logs/"; // fallback location if we cannot read config
         Exception startupEx = null;
         IConfigurationRoot appConfig = null;

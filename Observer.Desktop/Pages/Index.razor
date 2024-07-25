@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inherits BasePage
 @using Velopack;
+@using Velopack.Sources;
 
 @code {
     [Inject] NavigationManager NavigationManager { get; set; }
@@ -51,7 +52,7 @@
     // Velopack
     protected  async Task CheckForProgramUpdate()
     {
-        var mgr = new UpdateManager(AppState.ProgramUpdateURL);
+        var mgr = new UpdateManager(new GithubSource(AppState.ProgramUpdateURL, null, false));
 
         // check for new version
         UpdateInfo? newVersion = null;
@@ -62,7 +63,7 @@
         }
         catch (Exception ex)
         {
-            logger.LogInformation("Check for program update failed.  The exception is: {e}", ex.ToString());
+            logger.LogInformation("Check for program update failed.  The update url is {u}.  The exception is: {e}", AppState.ProgramUpdateURL,  ex.ToString());
         }
 
         if (newVersion == null)

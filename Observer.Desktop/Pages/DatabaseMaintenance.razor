@@ -31,9 +31,10 @@
 
 @code {
     private bool dbExists;
-    private string dbStatus = "Checking...";
+    private string dbStatus { get; set; } = "Checking...";
     [Inject] IMessageBox MessageBox { get; set; }
     [Inject] IContainer container { get; set; }
+
 
     // Cant inject these properties directly because they are registered with Autofac.  See Program.cs.
     private IDatabaseUtilities dbUtilities { get; set; }  
@@ -47,13 +48,23 @@
         dbUtilities = scope.Resolve<IDatabaseUtilities>();
         endPoint = scope.Resolve<IEndPointConfiguration>();
         serviceClient = scope.Resolve<IAdaptiveClient<IAPI_Manifest>>();
-        await VerifyDbClickHandler();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if(firstRender)
+            await VerifyDbClickHandler();
     }
 
     private async Task VerifyDbClickHandler() 
     {
+        await MessageBox.ShowLoading();
         DatabaseStatus status = DatabaseStatus.DoesNotExist;
         string errorMsg = null;
+
         try
         {
             status = await dbUtilities.GetDatabaseStatus(endPoint);
@@ -72,7 +83,9 @@
                 DatabaseStatus.DoesNotExist => "Database does not exist.  Use the Create / Update databse option to create it."  ,
                 _ => throw new Exception($"Unknown response from GetDatabaseStatus: {status.ToString()}.")
             };
-        
+
+            await MessageBox.HideLoading();
+            StateHasChanged();
         }
 
 
@@ -81,25 +94,31 @@
 
     private async Task CreateDbClickHandler()
     {
+        await MessageBox.ShowLoading();
         try
         {
             DatabaseValidationResult result = await dbUtilities.CreateOrUpdateDatabase(endPoint);
 
             if ((!result.DatabaseWasCreated) && (!result.AppliedMigrations.Any()))
                 dbStatus = "Database exists and schema is current.  No changes were made.";
-            else if(result.DatabaseWasCreated)
+            else if (result.DatabaseWasCreated)
                 dbStatus = "Database was created successfully. ";
 
             if (result.AppliedMigrations.Any())
                 dbStatus = dbStatus + "The following updates were applied: " + string.Join(", ", result.AppliedMigrations);
 
             dbExists = true;
-
+            // The endpoint was marked as non-functional because the db did not exist.  Make another call using Try to marke it as alive.
+            IEnumerable<FredSeries> series = await serviceClient.TryAsync(x => x.SeriesService.GetLocalSeries(), endPoint.Name);
         }
         catch (Exception ex)
         {
             dbStatus = $"An error occured while attempting to update the database.  The error is: {ex.ToString()}";
 
+        }
+        finally
+        {
+            await MessageBox.HideLoading();
         }
     }
 

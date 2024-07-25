@@ -1,8 +1,8 @@
 ﻿@page "/CategoryViewer/{parentID}"
 @inherits SeriesViewBasePage
 @using Downloader = LeaderAnalytics.Vyntix.Fred.Domain.Downloader;
-<MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 justify-space-between gap-8">
-    <div class="d-flex flex-row gap-1 justify-start align-center" style="overflow:auto;white-space:nowrap;">
+<MudPaper Outlined="true" Class="d-flex mt-5 mb-5 pa-3 ">
+    <div class="d-flex flex-row gap-1 justify-start align-center flex-grow-1" style="overflow:auto;white-space:nowrap;">
         @{
             ViewState v = AppState.GetViewState(View.Category);
             foreach (LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node n in v.BreadCrumbs)
@@ -13,8 +13,12 @@
             }
         }
     </div>
-    <MudIconButton Title="Download Series, Observations and related data" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="DownloadClickHandler" Class="d-flex"></MudIconButton>
+    <div class="d-flex flex-grow-0 gap-8">
+        <MudIconButton Title="Refresh" Size="Size.Large" Icon="@Icons.Material.Filled.Refresh" Variant="Variant.Filled" @onclick="RefreshClickHandler" Class="d-flex align-end" />
+        <MudIconButton Title="Download Series, Observations and related data" Size="Size.Large" Icon="@Icons.Material.Filled.FileDownload" Variant="Variant.Filled" @onclick="DownloadClickHandler" Class="d-flex"></MudIconButton>
+    </div>
 </MudPaper>
+
 <MudTable ServerData="@(new Func<TableState, Task<TableData<Downloader.Node>>>(LoadNodes))"
           AllowUnsorted="false" Dense="true" Hover="true" MultiSelection="false" @ref="seriesTable" FixedHeader="true" Height="calc(100vh - 300px)" RowsPerPage="viewState.Take" CurrentPage="viewState.Page">
     <ToolBarContent>
@@ -115,6 +119,8 @@
         seriesTable.CurrentPage = 0;
         seriesTable.ReloadServerData();
     }
+
+    protected async Task RefreshClickHandler() => await seriesTable.ReloadServerData();
 
     private async Task<TableData<LeaderAnalytics.Vyntix.Fred.Domain.Downloader.Node>> LoadNodes(TableState tableState)
     {
