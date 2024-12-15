@@ -2,7 +2,7 @@
   
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
-	  <TargetFramework>net8</TargetFramework>
+	  <TargetFramework>net9</TargetFramework>
 	  <Version>1.0.0</Version>
   </PropertyGroup>
   
@@ -26,18 +26,18 @@
 </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
-		<PackageReference Include="Blazor-ApexCharts" Version="2.3.3" />
-		<PackageReference Include="LeaderAnalytics.LeaderPivot.Blazor" Version="3.0.4" />
-		<PackageReference Include="LeaderAnalytics.MessageBox.Blazor" Version="1.0.2" />
-		<PackageReference Include="LeaderAnalytics.Vyntix.FileExporters" Version="1.0.8" />
-		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="2.0.6" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+		<PackageReference Include="Blazor-ApexCharts" Version="4.0.1" />
+		<PackageReference Include="LeaderAnalytics.LeaderPivot.Blazor" Version="4.0.1" />
+		<PackageReference Include="LeaderAnalytics.MessageBox.Blazor" Version="2.0.0" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.FileExporters" Version="2.0.0" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="3.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
 		<PackageReference Include="MudBlazor" Version="6.17.0" />
-		<PackageReference Include="Photino.Blazor" Version="2.7.0" />
-		<PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-		<PackageReference Include="Velopack" Version="0.0.359" />
+		<PackageReference Include="Photino.Blazor" Version="3.2.0" />
+		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+		<PackageReference Include="Velopack" Version="0.0.942" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Update="wwwroot\**">
@@ -56,5 +56,9 @@
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
 	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Update="Nerdbank.GitVersioning" Version="3.7.112" />
 	</ItemGroup>
 </Project>

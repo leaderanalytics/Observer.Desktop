@@ -9,10 +9,15 @@ https://docs.velopack.io/distributing/deploy-cli
 -c in pack command is channel i.e. windows, linux, etc.  Default is win
 > In order for delta's to be generated during the pack command, you need to first download the current latest release. This should be done with the download command:
 
+Binaries are published to github via the Azure pipeline.  There is no need to manually run any velopack script to publish to github.
+
+
+To manually create release binaries:
 
 Open command window in .csproj folder
-dotnet publish -c Release --self-contained -r win-x64 -o .\bin\Release\net8\win-x64\publish
-vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p .\bin\Release\net8\win-x64\publish -e Observer.exe -o c:\Shared\Releases\Observer.Desktop\Windows\ -i icon.ico -c win
+Run 'dotnet tool update -g vpk' to update velopack
+dotnet publish -c Release --self-contained -r win-x64 -o .\bin\Release\net9\win-x64\publish
+vpk pack -u LeaderAnalytics.Vyntix.Observer.Desktop --packTitle "Observer Desktop" -v 1.0.0 -p .\bin\Release\net9\win-x64\publish -e Observer.exe -o c:\Shared\Releases\Observer.Desktop\Windows\ -i icon.ico -c win
 
 --- NBGV ---
 https://stackoverflow.com/questions/64045487/azure-ci-and-cd-with-nbgv
