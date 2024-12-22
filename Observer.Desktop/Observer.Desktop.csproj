@@ -31,7 +31,7 @@
 		<PackageReference Include="LeaderAnalytics.LeaderPivot.Blazor" Version="4.0.1" />
 		<PackageReference Include="LeaderAnalytics.MessageBox.Blazor" Version="2.0.0" />
 		<PackageReference Include="LeaderAnalytics.Vyntix.FileExporters" Version="2.0.0" />
-		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="3.0.1" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="3.0.3" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
 		<PackageReference Include="MudBlazor" Version="6.17.0" />
 		<PackageReference Include="Photino.Blazor" Version="3.2.0" />

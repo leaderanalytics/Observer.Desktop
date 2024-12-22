@@ -76,8 +76,10 @@ class Program
             // Cannot call UseServiceProviderFactory() on PhotinoBlazorAppBuilder since it does not implement IHostBuilder.
             // Add the Autofac container to the Photino service collection and inject it as needed.
             ContainerBuilder containerBuilder = new();
+            RegistrationHelper registrationHelper = new RegistrationHelper(containerBuilder);
+            registrationHelper.RegisterEndPoints(endPoints);
+            registrationHelper.AddFredDownloaderServices();
             containerBuilder.RegisterInstance(appState);
-            containerBuilder.AddFredDownloaderServices(endPoints);
             containerBuilder.RegisterModule(new LeaderAnalytics.AdaptiveClient.EntityFrameworkCore.AutofacModule());
             
             if (!(endPoints?.Any(x => x.IsActive) ?? false))
