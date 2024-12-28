@@ -27,17 +27,18 @@
 
 	<ItemGroup>
 		<PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-		<PackageReference Include="Blazor-ApexCharts" Version="4.0.1" />
+		<PackageReference Include="Blazor-ApexCharts" Version="5.0.0" />
 		<PackageReference Include="LeaderAnalytics.LeaderPivot.Blazor" Version="4.0.1" />
 		<PackageReference Include="LeaderAnalytics.MessageBox.Blazor" Version="2.0.0" />
 		<PackageReference Include="LeaderAnalytics.Vyntix.FileExporters" Version="2.0.0" />
-		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="3.0.3" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.Downloader" Version="3.0.4" />
+		<PackageReference Include="LeaderAnalytics.Vyntix.Fred.StagingDb" Version="2.0.4" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
 		<PackageReference Include="MudBlazor" Version="6.17.0" />
 		<PackageReference Include="Photino.Blazor" Version="3.2.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-		<PackageReference Include="Velopack" Version="0.0.942" />
+		<PackageReference Include="Velopack" Version="0.0.1023" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Update="wwwroot\**">

@@ -2,14 +2,14 @@
 @using LeaderAnalytics.AdaptiveClient.EntityFrameworkCore;
 
 <MudPaper Class="m-3">
-    
+
     <MudPaper Class="d-flex mt-5 mb-5 pa-3 justify-space-around">
         <MudButton Variant="Variant.Filled" @onclick="CreateDbClickHandler" Class="d-flex" Style="text-transform:none">Create or Update Database</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="VerifyDbClickHandler" Class="d-flex" Style="text-transform:none">Verify Database</MudButton>
         <MudButton Variant="Variant.Filled" @onclick="DeleteDbClickHandler" Disabled="! dbExists" Class="d-flex" Style="text-transform:none">Delete Database</MudButton>
     </MudPaper>
 
-    
+
 </MudPaper>
 <MudPaper Class="d-flex flex-column ma-10 pa-3 justify-space-around">
     <MudGrid Class="mt-5 m-lg-5 mr-5">
@@ -18,18 +18,22 @@
         </MudItem>
         <MudItem xs="9">
             <MudText Align="Align.Left">@dbStatus</MudText>
-            </MudItem>
-            <MudItem xs="3">
-                <MudText Align="Align.Left">Connection String:</MudText>
-            </MudItem>
-            <MudItem xs="9">
-                <MudText Align="Align.Left">@endPoint.ConnectionString</MudText>
-            </MudItem>
-        </MudGrid>
-    </MudPaper>
+        </MudItem>
+        <MudItem xs="3">
+            <MudText Align="Align.Left">Connection String:</MudText>
+        </MudItem>
+        <MudItem xs="9">
+            <MudText Align="Align.Left">@endPoint.ConnectionString</MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
 
 @code {
+
+    // Nuget package LeaderAnalytics.Vyntix.FredStagingDb must be referenced directly from this
+    // app otherwise the .sql files cannot be found and copied to the db when it is initialized.
+
     private bool dbExists;
     private string dbStatus { get; set; } = "Checking...";
     [Inject] IMessageBox MessageBox { get; set; }
